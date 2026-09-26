@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Burmalda — игровой зал</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts: Orbitron & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Golos+Text:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cyber: {
+              bg: '#0F1F19',
+              panel: 'rgba(21, 42, 33, 0.97)',
+              card: '#1D372B',
+              pink: '#B5382C',
+              cyan: '#D4A94F',
+              purple: '#6E2530',
+              lime: '#7DBB6A',
+              yellow: '#E9C874',
+              text: '#EFE6D2'
+            }
+          },
+          fontFamily: {
+            sans: ['Golos Text', 'sans-serif'],
+            cyber: ['Golos Text', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Neon Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0d011a; }
+    ::-webkit-scrollbar-thumb { background: #2a0052; border-radius: 4px; border: 1px solid #ff007f; }
+    ::-webkit-scrollbar-thumb:hover { background: #ff007f; box-shadow: 0 0 10px #ff007f; }
+
+    /* Theme Dynamic Colors Root */
+    :root {
+      --accent-main: #FF007F;
+      --accent-secondary: #00E5FF;
+      --glow-color: rgba(255, 0, 127, 0.5);
+    }
+
+    .theme-cyan {
+      --accent-main: #00E5FF;
+      --accent-secondary: #FF007F;
+      --glow-color: rgba(0, 229, 255, 0.5);
+    }
+    .theme-lime {
+      --accent-main: #39FF14;
+      --accent-secondary: #00E5FF;
+      --glow-color: rgba(57, 255, 20, 0.5);
+    }
+    .theme-purple {
+      --accent-main: #B800FF;
+      --accent-secondary: #FF007F;
+      --glow-color: rgba(184, 0, 255, 0.5);
+    }
+
+    /* Glassmorphism Styles */
+    .glass-panel {
+      background: rgba(26, 0, 51, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 0, 127, 0.3);
+    }
+
+    .glass-card {
+      background: rgba(35, 7, 66, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Glow utilities */
+    .glow-pink-box {
+      box-shadow: 0 0 20px rgba(255, 0, 127, 0.35), inset 0 0 10px rgba(255, 0, 127, 0.2);
+    }
+    .glow-pink-active {
+      box-shadow: 0 0 18px #ff007f, inset 0 0 12px rgba(255, 0, 127, 0.4);
+      border: 2px solid #ff007f !important;
+      background: linear-gradient(135deg, rgba(255,0,127,0.25) 0%, rgba(184,0,255,0.25) 100%) !important;
+    }
+    .glow-cyan-box {
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.35), inset 0 0 10px rgba(0, 229, 255, 0.2);
+    }
+
+    /* Low Balance Pulsing Micro-interaction */
+    @keyframes pulseLowBalance {
+      0%, 100% {
+        box-shadow: 0 0 8px rgba(255, 0, 127, 0.4), 0 0 15px rgba(0, 229, 255, 0.3);
+        border-color: rgba(255, 0, 127, 0.8);
+      }
+      50% {
+        box-shadow: 0 0 22px rgba(255, 0, 127, 0.8), 0 0 30px rgba(0, 229, 255, 0.6);
+        border-color: rgba(0, 229, 255, 1);
+      }
+    }
+
+    .pulse-balance {
+      animation: pulseLowBalance 2s infinite ease-in-out;
+    }
+
+    /* Game Card Hover Effect */
+    .game-card-hover {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1.25rem;
+      background: linear-gradient(135deg, #1f0036 0%, #32005a 100%);
+    }
+
+    .game-card-hover:hover {
+      transform: translateY(-4px) scale(1.03);
+      border-color: var(--accent-main);
+      box-shadow: 0 0 25px var(--glow-color);
+    }
+
+    .game-card-hover .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(13, 1, 26, 0.88);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: opacity 0.3s ease;
+      z-index: 20;
+    }
+
+    .game-card-hover:hover .overlay {
+      opacity: 1;
+    }
+
+    /* Chart Container */
+    .chart-container {
+      position: relative;
+      width: 100%;
+      max-width: 650px;
+      margin-left: auto;
+      margin-right: auto;
+      height: 280px;
+      max-height: 320px;
+    }
+
+    /* Slot Reel Setup & Glitch Animations */
+    .reel-window {
+      position: relative;
+      height: 250px;
+      overflow: hidden;
+      border-radius: 0.75rem;
+      background: rgba(15, 0, 30, 0.95);
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.9), 0 0 10px rgba(255,0,127,0.2);
+      border: 1px solid rgba(255, 0, 127, 0.3);
+    }
+
+    .reel-strip {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      will-change: transform;
+    }
+
+    .reel-strip.blur {
+      filter: blur(3px);
+    }
+
+    /* Frozen / Stutter Glitch Reel Animation for 2nd+ spin */
+    @keyframes frozenSpinGlitch {
+      0% { transform: translateY(0px); filter: blur(0px); }
+      15% { transform: translateY(-40px); filter: blur(1px) hue-rotate(90deg); }
+      30% { transform: translateY(-38px) scale(0.98); filter: blur(4px); }
+      45% { transform: translateY(-160px); filter: blur(8px); }
+      60% { transform: translateY(-155px); filter: blur(2px) opacity(0.7); }
+      75% { transform: translateY(-700px); filter: blur(12px); }
+      90% { transform: translateY(-1190px); filter: blur(2px); }
+      100% { transform: translateY(-1200px); filter: blur(0px); }
+    }
+
+    .reel-strip.frozen-anim {
+      animation: frozenSpinGlitch 1.2s cubic-bezier(0.8, 0.05, 0.2, 0.95) forwards;
+    }
+
+    .reel-cell {
+      height: 83.33px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      user-select: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.3s ease;
+    }
+
+    .reel-cell img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .reel-cell.winning {
+      animation: winPulse 0.5s infinite alternate;
+      background: radial-gradient(circle, rgba(255, 0, 127, 0.6) 0%, rgba(13, 1, 26, 0.9) 100%);
+      border: 2px solid #00E5FF;
+      box-shadow: 0 0 18px #00E5FF;
+    }
+
+    @keyframes winPulse {
+      0% { transform: scale(0.95); }
+      100% { transform: scale(1.05); }
+    }
+
+    /* Blackjack: зелёное сукно в стиле сайта */
+    .bj-table-felt {
+      background: radial-gradient(ellipse at 50% 28%, #1D5A3A 0%, #123825 62%, #0A2418 100%);
+      border: 9px solid #6b431e;
+      box-shadow: inset 0 0 0 3px rgba(212,169,79,.55), inset 0 0 70px rgba(0,0,0,.65), 0 10px 0 #08120d;
+      position: relative;
+    }
+    .bj-arc-line {
+      position: absolute; top: 17%; left: 9%; right: 9%; height: 58%;
+      border-bottom: 2px dashed rgba(212,169,79,.32); border-radius: 50%; pointer-events: none;
+    }
+    .bj-felt-mark{position:absolute;left:0;right:0;text-align:center;color:rgba(239,230,210,.22);font-family:'Alfa Slab One',serif;letter-spacing:.12em;pointer-events:none;text-transform:uppercase;z-index:1}
+    .bj-shoe{position:absolute;top:14px;right:18px;width:30px;height:42px;background:#241612;border:2px solid #D4A94F;border-radius:4px;box-shadow:0 3px 6px rgba(0,0,0,.5);z-index:1}
+    .bj-shoe::after{content:'';position:absolute;inset:4px;border:1px dashed rgba(212,169,79,.5)}
+
+    .playing-card {
+      width: 68px; height: 98px; background: #fdfaf0; border-radius: 8px;
+      border: 1px solid rgba(0,0,0,.18); box-shadow: 0 4px 10px rgba(0,0,0,.45);
+      display: flex; flex-direction: column; justify-content: space-between; padding: 5px;
+      font-weight: 800; user-select: none; position: relative;
+    }
+    .playing-card.card-deal{ animation: cardDeal .42s cubic-bezier(.2,.8,.3,1.05) both; }
+    .playing-card.card-flip{ animation: cardFlip .5s ease both; }
+    .playing-card.back {
+      background: linear-gradient(135deg, #123825 0%, #1D5A3A 55%, #0A2418 100%);
+      border: 2px solid #D4A94F; position: relative;
+    }
+    .playing-card.back::after {
+      content: "BM"; position: absolute; inset: 4px; border: 1px dashed rgba(212,169,79,.55);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Alfa Slab One', serif; font-size: 13px; color: #D4A94F; letter-spacing: 1px;
+    }
+    @keyframes cardDeal { 0%{opacity:0;transform:translate(150px,-70px) rotate(14deg) scale(.65)} 100%{opacity:1;transform:none} }
+    @keyframes cardFlip { 0%{transform:rotateY(0)} 50%{transform:rotateY(92deg)} 100%{transform:rotateY(0)} }
+
+    .bj-betspot{width:104px;height:104px;border-radius:50%;border:3px dashed rgba(212,169,79,.55);display:flex;align-items:center;justify-content:center;position:relative;margin:0 auto;background:rgba(0,0,0,.15)}
+    .bj-betspot-label{position:absolute;bottom:-22px;left:0;right:0;text-align:center;font-size:9px;color:#D4A94F;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+    .bj-chip{width:36px;height:36px;border-radius:50%;border:3px dashed rgba(255,255,255,.75);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;position:absolute;box-shadow:0 3px 5px rgba(0,0,0,.55);animation:chipDrop .3s ease both}
+    @keyframes chipDrop{from{transform:translateY(-30px) scale(.6);opacity:0}to{transform:none;opacity:1}}
+    .chip-btn{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;border:3px dashed rgba(255,255,255,.7);box-shadow:0 3px 6px rgba(0,0,0,.5);transition:transform .15s}
+    .chip-btn:hover{transform:scale(1.08) translateY(-2px)}
+    .chip-btn:active{transform:scale(.96)}
+    .chip-2{background:#B5382C}.chip-5{background:#1D372B;border-color:rgba(212,169,79,.8)}.chip-10{background:#7A2E38}.chip-25{background:#D4A94F;color:#241612;border-color:rgba(36,22,18,.4)}
+
+    .bj-hand-box{border:2px solid transparent;border-radius:16px;padding:10px 8px 4px;transition:border-color .3s,box-shadow .3s}
+    .bj-hand-box.active{border-color:#D4A94F;box-shadow:0 0 16px rgba(212,169,79,.45)}
+    .bj-hand-box.busted{opacity:.55}
+
+    #bj-settle-overlay{position:absolute;inset:0;z-index:40;background:rgba(10,20,15,.92);backdrop-filter:blur(3px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:20px}
+    #bj-settle-overlay.hidden{display:none}
+    #bj-insurance-box{position:relative;z-index:20}
+
+/* Собачья будка */
+    #dh-panel{transition:background .5s,border-color .5s}
+    #dh-panel.fs{background:linear-gradient(160deg,rgba(70,20,0,.92),rgba(26,0,51,.92));border-color:#ffd700}
+    .reel-cell.dh-cell{position:relative}
+    .reel-cell.dh-cell img{width:68px;height:68px;object-fit:contain;border:0;border-radius:0;box-shadow:none;background:none}
+    .reel-cell.dh-cell img.dh-badge,.dh-lockc img.dh-badge{position:absolute;right:4px;bottom:2px;width:24px;height:24px;animation:dhPop .35s}
+    @keyframes dhPop{from{transform:scale(0)}to{transform:scale(1)}}
+    .reel-cell.dh-drop{animation:dhDrop .5s}
+    @keyframes dhDrop{0%{transform:translateY(-50px)}60%{transform:translateY(6px)}100%{transform:none}}
+    .reel-cell.dh-win{animation:dhWin .6s infinite alternate;background:radial-gradient(circle,rgba(255,215,0,.5),transparent 70%)}
+    @keyframes dhWin{to{transform:scale(1.1)}}
+    #doghouse-grid.dimmed .reel-cell:not(.dh-win){opacity:.6}
+    .dh-lockl{position:absolute;inset:0;pointer-events:none;z-index:5}
+    .dh-lockc{position:absolute;left:0;width:100%;height:83.33px;display:flex;align-items:center;justify-content:center;border:2px dashed #ffd700;box-shadow:inset 0 0 14px #ffd700;background:rgba(13,1,26,.75)}
+    .dh-lockc img{width:68px;height:68px;object-fit:contain}
+      /* ===== Оформление: игровой зал, зелёное сукно + латунь ===== */
+    :root{--felt:#0F1F19;--felt2:#152A21;--felt3:#1D372B;--brass:#D4A94F;--brick:#B5382C;--ivory:#EFE6D2;--accent-main:#D4A94F;--accent-secondary:#B5382C;--glow-color:rgba(0,0,0,0)}
+    .theme-cyan{--accent-main:#B5382C;--accent-secondary:#D4A94F}.theme-lime{--accent-main:#7DBB6A;--accent-secondary:#D4A94F}.theme-purple{--accent-main:#A0505E;--accent-secondary:#D4A94F}
+    body{background-color:var(--felt);background-image:radial-gradient(rgba(239,230,210,.035) 1px,transparent 1px);background-size:4px 4px}
+    h1,h2,h3,.brand-name,.text-cyber-extrabold,#global-balance,#dh-credit-display{font-family:'Alfa Slab One',serif!important;font-weight:400!important;letter-spacing:.01em}
+    ::-webkit-scrollbar-track{background:var(--felt)}::-webkit-scrollbar-thumb{background:#2c4a3b;border:1px solid var(--brass);border-radius:2px}::-webkit-scrollbar-thumb:hover{background:var(--brass);box-shadow:none}
+    .glow-pink-box,.glow-cyan-box,.shadow-2xl,[class*="shadow-[0_0"]{box-shadow:none!important}
+    .glass-panel{background:var(--felt2)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border:1px solid rgba(212,169,79,.35)!important;box-shadow:4px 4px 0 #08120d!important}
+    header.glass-panel{background:#0A1611!important;border-width:0 0 2px 0!important;border-bottom-color:var(--brass)!important;box-shadow:none!important}
+    .glass-card{background:var(--felt3)!important;backdrop-filter:none!important;border:1px solid rgba(212,169,79,.2)!important}
+    .glow-pink-active{background:#2A4A38!important;border:1px solid var(--brass)!important;box-shadow:inset 4px 0 0 var(--brass)!important}
+    .pulse-balance{animation:none!important;border:1px solid var(--brass)!important}
+    [class*="border-cyber-pink"],[class*="border-cyber-purple"]{border-color:rgba(212,169,79,.3)!important}
+    .rounded-3xl{border-radius:12px!important}.rounded-2xl{border-radius:9px!important}.rounded-xl{border-radius:6px!important}.rounded-lg{border-radius:4px!important}
+    .text-cyber-pink{color:#E0705F!important}.text-cyber-purple{color:#C77A86!important}
+    [class*="bg-cyber-"][class*="font-cyber"]:not(.tab-btn):not(input){box-shadow:inset 0 -3px 0 rgba(0,0,0,.28)}
+    .game-card-hover{background:var(--felt3)!important}
+    .game-card-hover:hover{transform:translateY(-3px)!important;box-shadow:4px 4px 0 var(--brass)!important;border-color:var(--brass)!important}
+    .game-card-hover .overlay{background:rgba(10,22,17,.93);backdrop-filter:none}
+    .reel-window{background:#0A1712;border:1px solid rgba(212,169,79,.4);box-shadow:inset 0 0 14px rgba(0,0,0,.7)}
+    .reel-cell{border-bottom:1px solid rgba(239,230,210,.06)}
+    .reel-cell.winning{animation:none;background:rgba(212,169,79,.25);border:2px solid var(--brass);box-shadow:none}
+    .reel-cell.dh-win{background:rgba(212,169,79,.28);outline:2px solid var(--brass);outline-offset:-3px}
+    #dh-panel.fs{background:#2B1A12!important;border-color:var(--brass)!important}
+    .dh-lockc{box-shadow:none;background:rgba(10,22,17,.7);border:2px dashed var(--brass)}
+    .brand-chip{width:38px;height:38px;border-radius:50%;background:var(--brick);border:3px dashed var(--ivory);outline:2px solid var(--brick);display:flex;align-items:center;justify-content:center;font-family:'Alfa Slab One',serif;font-size:18px;color:var(--ivory)}
+    .brand-name{font-size:20px;color:var(--ivory)}
+    .text-\[9px\]{font-size:11px!important}.text-\[10px\]{font-size:12px!important}
+    .uppercase{text-transform:none!important}.tracking-wider,.tracking-widest,.tracking-wide{letter-spacing:.01em!important}
+    .font-mono{font-family:'Golos Text',sans-serif!important;font-variant-numeric:tabular-nums}
+    :focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+      #dh-bg{position:absolute;inset:0;border-radius:inherit;background-size:cover;background-position:center;opacity:.28;pointer-events:none}
+    #dh-panel>*:not(#dh-bg){position:relative;z-index:1}
+  
+    .bb-money{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,#ffe27a,#d9a020);border:3px solid #241612;display:flex;align-items:center;justify-content:center;font-family:'Alfa Slab One',serif;font-size:15px;color:#3a2a00;box-shadow:0 0 10px rgba(255,215,0,.6)}
+    .bb-money span{font-size:12px}
+    #fr-panel.fs,#bb-panel.fs,#ph-panel.fs{background:linear-gradient(160deg,rgba(70,20,0,.5),rgba(26,0,51,.5))}
+  </style>
+</head>
+<body id="app-body" class="bg-cyber-bg text-cyber-text font-sans min-h-screen flex flex-col antialiased selection:bg-cyber-pink selection:text-white">
+
+  <!-- Application Shell Layout -->
+  <div class="flex flex-col min-h-screen">
+
+    <!-- TOP HEADER BAR -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-cyber-pink/30 px-4 py-2.5 shadow-2xl">
+      <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+        
+        <!-- Left Brand Logo -->
+        <div class="flex items-center space-x-3">
+          <div class="flex items-center space-x-2 cursor-pointer" onclick="switchTab('tab-lobby')">
+            <div class="brand-chip">
+              7
+            </div>
+            <div class="hidden sm:block">
+              <span class="brand-name">
+                BURMALDA
+              </span>
+              <span class="block text-[9px] font-cyber tracking-widest text-cyber-cyan uppercase -mt-1">
+                Игровой зал
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center Search Input -->
+        <div class="flex-1 max-w-xs sm:max-w-sm relative hidden md:block">
+          <input id="lobby-search-input" onkeyup="handleSearch(this.value)" type="text" placeholder="Поиск игры или слота..." class="w-full pl-9 pr-4 py-1.5 bg-cyber-bg/90 border border-cyber-pink/30 rounded-full text-xs text-cyber-text focus:outline-none focus:border-cyber-cyan focus:ring-1 focus:ring-cyber-cyan transition">
+        </div>
+
+        <!-- Right User Widgets -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          
+          <!-- Static Balance Widget -->
+          <div class="glass-panel rounded-full px-4 py-1.5 flex items-center space-x-2 transition transform hover:scale-105">
+            <span id="global-balance" class="font-cyber font-extrabold text-xs sm:text-sm text-white">100.00 EUR</span>
+          </div>
+
+          <!-- TOP-RIGHT SETTINGS & PROFILE DROPDOWN MENU -->
+          <div class="relative">
+            <button onclick="toggleSettingsDropdown()" class="flex items-center space-x-2 bg-cyber-card/80 border border-cyber-purple/50 hover:border-cyber-cyan px-2.5 py-1 rounded-2xl transition shadow-[0_0_12px_rgba(184,0,255,0.3)]">
+              <div class="w-7 h-7 rounded-xl overflow-hidden border border-cyber-pink/60 bg-cyber-bg flex items-center justify-center">
+                <img id="header-avatar-img" data-art="av1" alt="Avatar" class="w-full h-full object-cover">
+              </div>
+              <div class="text-left hidden sm:block">
+                <span id="header-username" class="text-[10px] font-cyber font-bold text-white block leading-none">Гость_0417</span>
+                <span id="header-level" class="text-[9px] font-cyber text-cyber-cyan block leading-tight mt-0.5">Lv 1 • VIP</span>
+              </div>
+              <span class="text-xs text-cyber-pink ml-1"></span>
+            </button>
+
+            <!-- Dropdown Menu Body -->
+            <div id="settings-dropdown" class="hidden absolute right-0 mt-2 w-72 glass-panel border border-cyber-pink/50 rounded-2xl p-3 shadow-2xl z-50 space-y-3 text-xs">
+              <div class="flex justify-between items-center pb-2 border-b border-cyber-pink/30">
+                <span class="font-cyber font-bold text-white text-xs">Настройки и профиль</span>
+                <span class="text-[10px] font-mono text-cyber-lime">ONLINE</span>
+              </div>
+
+              <!-- Quick Navigation Options inside Settings -->
+              <div class="space-y-1.5">
+                <button onclick="openSettingsTab('tab-profile')" class="w-full text-left px-3 py-2 bg-cyber-card hover:bg-cyber-purple/40 border border-cyber-pink/30 rounded-xl font-cyber font-bold text-slate-200 hover:text-white flex items-center justify-between transition">
+                  <span>Кастомизация Профиля</span>
+                  <span class="text-[10px] text-cyber-cyan">Изменить</span>
+                </button>
+
+                <button onclick="openSettingsTab('tab-levels')" class="w-full text-left px-3 py-2 bg-cyber-card hover:bg-cyber-purple/40 border border-cyber-pink/30 rounded-xl font-cyber font-bold text-slate-200 hover:text-white flex items-center justify-between transition">
+                  <span>Уровни и Лояльность</span>
+                  <span class="text-[10px] text-cyber-pink font-mono">Lv 1</span>
+                </button>
+
+                <button onclick="openSettingsTab('tab-tech')" class="w-full text-left px-3 py-2 bg-cyber-card hover:bg-cyber-purple/40 border border-cyber-pink/30 rounded-xl font-cyber font-bold text-slate-200 hover:text-white flex items-center justify-between transition">
+                  <span>Архитектура & Provably Fair</span>
+                  <span class="text-[10px] text-cyber-lime font-mono">HMAC</span>
+                </button>
+              </div>
+
+              <!-- Theme Quick Selector inside Dropdown -->
+              <div class="pt-2 border-t border-cyber-pink/20 space-y-1.5">
+                <span class="text-[10px] font-cyber text-slate-400 block uppercase">Цветовая гамма приложения:</span>
+                <div class="grid grid-cols-4 gap-1.5">
+                  <button onclick="setThemeDirect('')" class="h-6 rounded-lg bg-[#B5382C] border border-white/40 hover:scale-105 transition" title="Кирпич"></button>
+                  <button onclick="setThemeDirect('theme-cyan')" class="h-6 rounded-lg bg-[#D4A94F] border border-white/40 hover:scale-105 transition" title="Латунь"></button>
+                  <button onclick="setThemeDirect('theme-lime')" class="h-6 rounded-lg bg-[#7DBB6A] border border-white/40 hover:scale-105 transition" title="Шалфей"></button>
+                  <button onclick="setThemeDirect('theme-purple')" class="h-6 rounded-lg bg-[#6E2530] border border-white/40 hover:scale-105 transition" title="Бордо"></button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN BODY CONTAINER WITH SIDEBAR + VIEWPORT -->
+    <div class="flex-grow max-w-7xl w-full mx-auto px-2 sm:px-4 py-4 flex gap-4">
+      
+      <!-- SIDEBAR NAVIGATION (CLEAN TYPOGRAPHY, NO EMOJIS OR LEVEL/ARCH LINKS) -->
+      <aside class="w-16 sm:w-56 shrink-0 flex flex-col justify-between glass-panel rounded-3xl p-2 sm:p-4 border border-cyber-pink/40 min-h-[calc(100vh-6rem)]">
+        
+        <!-- Navigation Links List -->
+        <div class="space-y-3">
+          
+          <!-- 1. Главная -->
+          <button onclick="switchTab('tab-lobby')" id="btn-tab-lobby" class="tab-btn glow-pink-active w-full p-2.5 sm:px-4 sm:py-3.5 rounded-2xl flex items-center space-x-3 text-xs sm:text-sm font-cyber font-bold text-white transition">
+            <span class="w-2 h-2 rounded-full bg-cyber-pink shadow-[0_0_8px_#ff007f]"></span>
+            <span class="hidden sm:inline tracking-wider">Главная</span>
+          </button>
+
+          <!-- 2. Слоты -->
+          <button onclick="switchTab('tab-slots-hub')" id="btn-tab-slots-hub" class="tab-btn w-full p-2.5 sm:px-4 sm:py-3.5 rounded-2xl flex items-center space-x-3 text-xs sm:text-sm font-cyber font-bold text-slate-300 hover:text-white hover:bg-cyber-card border border-transparent hover:border-cyber-pink/50 transition">
+            <span class="w-2 h-2 rounded-full bg-cyber-cyan shadow-[0_0_8px_#00e5ff]"></span>
+            <span class="hidden sm:inline tracking-wider">Слоты</span>
+          </button>
+
+          <!-- 3. Блекджек VIP -->
+          <button onclick="switchTab('tab-blackjack')" id="btn-tab-blackjack" class="tab-btn w-full p-2.5 sm:px-4 sm:py-3.5 rounded-2xl flex items-center space-x-3 text-xs sm:text-sm font-cyber font-bold text-slate-300 hover:text-white hover:bg-cyber-card border border-transparent hover:border-cyber-cyan/50 transition">
+            <span class="w-2 h-2 rounded-full bg-cyber-lime shadow-[0_0_8px_#39ff14]"></span>
+            <span class="hidden sm:inline tracking-wider">Блекджек VIP</span>
+          </button>
+
+          <!-- 4. Покер (Скоро) -->
+          <button disabled title="Покер находится в разработке" class="w-full p-2.5 sm:px-4 sm:py-3.5 rounded-2xl flex items-center justify-between text-xs sm:text-sm font-cyber font-bold text-slate-500 bg-cyber-bg/40 border border-white/5 cursor-not-allowed opacity-60">
+            <div class="flex items-center space-x-3">
+              <span class="w-2 h-2 rounded-full bg-slate-600"></span>
+              <span class="hidden sm:inline tracking-wider">Покер</span>
+            </div>
+            <span class="hidden sm:inline text-[9px] bg-cyber-pink/20 text-cyber-pink px-2 py-0.5 rounded-full border border-cyber-pink/40">Скоро</span>
+          </button>
+
+        </div>
+
+        <!-- Sidebar Bottom Support -->
+        <div class="pt-4 border-t border-cyber-pink/20">
+          <button onclick="alert('Чат с поддержкой 24/7 активирован!')" class="w-full py-2.5 px-2 bg-cyber-purple hover:from-cyber-purple/80 hover:to-cyber-pink/80 text-white font-cyber font-bold text-[11px] rounded-2xl border border-cyber-pink shadow-[0_0_12px_rgba(255,0,127,0.4)] flex items-center justify-center space-x-1.5 transition">
+            <span class="hidden sm:inline">Поддержка 24/7</span>
+            <span class="sm:hidden"></span>
+          </button>
+        </div>
+
+      </aside>
+
+      <!-- MAIN CONTENT VIEWPORT -->
+      <main class="flex-grow min-w-0">
+
+        <!-- ==================== TAB 1: MAIN HOME LOBBY ==================== -->
+        <section id="tab-lobby" class="tab-content block space-y-5">
+          
+          <!-- HERO PROMO BANNERS -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Banner 1: Dog House Promo -->
+            <div class="relative overflow-hidden rounded-3xl glass-card border border-cyber-pink/50 p-6 glow-pink-box flex flex-col justify-between min-h-[190px] group bg-gradient-to-r from-[#12261D] via-[#2B1A12] to-[#1D372B]">
+              <img data-art="cover_dog" alt="Dog House" class="absolute inset-0 w-full h-full object-cover opacity-35 group-hover:scale-105 transition duration-500">
+              <div class="absolute inset-0 bg-gradient-to-r from-cyber-bg via-cyber-bg/80 to-transparent"></div>
+              
+              <div class="relative z-10">
+                <span class="inline-block px-2.5 py-0.5 bg-cyber-pink text-white font-cyber font-black text-[10px] rounded-full uppercase tracking-widest mb-2 shadow-[0_0_10px_#ff007f]">
+                  Хит слот
+                </span>
+                <h2 class="text-2xl font-cyber font-black text-white leading-tight">
+                  THE DOG HOUSE
+                </h2>
+                <p class="text-xs text-cyber-cyan font-bold mt-1">
+                  Megaways 1000 • X10,000 Множитель
+                </p>
+              </div>
+              <div class="relative z-10 mt-4">
+                <button onclick="openSlotGame('doghouse')" class="px-5 py-2 bg-cyber-pink hover:from-cyber-pink/90 text-white font-cyber font-bold text-xs rounded-xl shadow-[0_0_15px_#ff007f] transition">
+                  Играть сейчас
+                </button>
+              </div>
+            </div>
+
+            <!-- Banner 2: Fortune Fruit Slots -->
+            <div class="relative overflow-hidden rounded-3xl glass-card border border-cyber-cyan/50 p-6 glow-cyan-box flex flex-col justify-between min-h-[190px] group bg-gradient-to-r from-[#12261D] via-[#12261D] to-[#12261D]">
+              <img data-art="cover_fruit" alt="Fortune Fruit Slots" class="absolute inset-0 w-full h-full object-cover opacity-35 group-hover:scale-105 transition duration-500">
+              <div class="absolute inset-0 bg-gradient-to-r from-cyber-bg via-cyber-bg/80 to-transparent"></div>
+              
+              <div class="relative z-10">
+                <span class="inline-block px-2.5 py-0.5 bg-cyber-cyan text-black font-cyber font-black text-[10px] rounded-full uppercase tracking-widest mb-2 shadow-[0_0_10px_#00e5ff]">
+                  Популярное
+                </span>
+                <h2 class="text-2xl font-cyber font-black text-white leading-tight">
+                  FORTUNE FRUIT SLOTS
+                </h2>
+                <p class="text-xs text-cyber-lime font-bold mt-1">
+                  Классика 5x3 • Выплаты до €50,000
+                </p>
+              </div>
+              <div class="relative z-10 mt-4">
+                <button onclick="openSlotGame('fruit')" class="px-5 py-2 bg-cyber-cyan text-black font-cyber font-bold text-xs rounded-xl shadow-[0_0_15px_#00e5ff] transition">
+                  Запустить
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- CATEGORY QUICK FILTER BUTTONS -->
+          <div class="flex items-center space-x-2 overflow-x-auto pb-1 text-xs font-cyber font-bold">
+            <button onclick="switchTab('tab-slots-hub')" class="px-4 py-2 bg-cyber-pink text-white rounded-2xl border border-cyber-pink shadow-[0_0_10px_#ff007f] flex items-center space-x-1.5 whitespace-nowrap">
+              <span>Все слоты казино</span>
+            </button>
+            <button onclick="switchTab('tab-blackjack')" class="px-4 py-2 glass-panel text-slate-300 hover:text-white rounded-2xl border border-cyber-pink/20 hover:border-cyber-cyan flex items-center space-x-1.5 whitespace-nowrap transition">
+              <span>Блекджек VIP</span>
+            </button>
+            <button onclick="filterCategory('popular')" class="cat-btn px-4 py-2 glass-panel text-slate-300 hover:text-white rounded-2xl border border-cyber-pink/20 hover:border-cyber-cyan flex items-center space-x-1.5 whitespace-nowrap transition">
+              <span>Популярные</span>
+            </button>
+          </div>
+
+          <!-- LOBBY GAMES GRID -->
+          <div id="games-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            
+            <!-- Card 1: The Dog House Megaways 1000 -->
+            <div class="game-card-hover glass-card border border-cyber-pink/40 h-52 flex flex-col justify-between p-3 relative group" data-cat="all popular">
+              <img data-art="cover_dog" alt="Dog House Megaways" class="absolute inset-0 w-full h-full object-cover rounded-2xl opacity-75 group-hover:opacity-40 transition">
+              <div class="absolute inset-0 bg-gradient-to-t from-cyber-bg via-transparent to-black/60 rounded-2xl"></div>
+              
+              <div class="relative z-10 flex justify-between items-start">
+                <span class="px-2 py-0.5 bg-cyber-pink text-white text-[9px] font-black font-cyber rounded-md uppercase">MEGAWAYS</span>
+                <span class="text-xs text-cyber-cyan font-mono font-bold bg-black/60 px-1.5 py-0.5 rounded">96.5%</span>
+              </div>
+              <div class="relative z-10 text-center my-1">
+                <h3 class="font-cyber font-black text-xs text-white drop-shadow-md">THE DOG HOUSE</h3>
+              </div>
+              <!-- Hover Overlay -->
+              <div class="overlay">
+                <h4 class="font-cyber font-bold text-xs text-white">The Dog House</h4>
+                <button onclick="openSlotGame('doghouse')" class="px-4 py-1.5 bg-cyber-pink hover:bg-cyber-pink/80 text-white font-cyber font-black text-xs rounded-xl shadow-[0_0_10px_#ff007f]">
+                  Играть
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 2: Fortune Fruit Slots -->
+            <div class="game-card-hover glass-card border border-cyber-purple/40 h-52 flex flex-col justify-between p-3 relative group" data-cat="all popular">
+              <img data-art="cover_fruit" alt="Fortune Fruit Slots" class="absolute inset-0 w-full h-full object-cover rounded-2xl opacity-75 group-hover:opacity-40 transition">
+              <div class="absolute inset-0 bg-gradient-to-t from-cyber-bg via-transparent to-black/60 rounded-2xl"></div>
+              
+              <div class="relative z-10 flex justify-between items-start">
+                <span class="px-2 py-0.5 bg-cyber-purple text-white text-[9px] font-black font-cyber rounded-md uppercase">HOT</span>
+                <span class="text-xs text-cyber-cyan font-mono font-bold bg-black/60 px-1.5 py-0.5 rounded">96.4%</span>
+              </div>
+              <div class="relative z-10 text-center my-1">
+                <h3 class="font-cyber font-black text-xs text-white drop-shadow-md">FORTUNE FRUIT</h3>
+              </div>
+              <div class="overlay">
+                <h4 class="font-cyber font-bold text-xs text-white">Fortune Fruit Slots</h4>
+                <button onclick="openSlotGame('fruit')" class="px-4 py-1.5 bg-cyber-pink hover:bg-cyber-pink/80 text-white font-cyber font-black text-xs rounded-xl shadow-[0_0_10px_#ff007f]">
+                  Играть
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 3: Big Bass Splash -->
+            <div class="game-card-hover glass-card border border-cyber-cyan/40 h-52 flex flex-col justify-between p-3 relative group" data-cat="all popular">
+              <img data-art="cover_fish" alt="Big Bass Splash" class="absolute inset-0 w-full h-full object-cover rounded-2xl opacity-75 group-hover:opacity-40 transition">
+              <div class="absolute inset-0 bg-gradient-to-t from-cyber-bg via-transparent to-black/60 rounded-2xl"></div>
+              
+              <div class="relative z-10 flex justify-between items-start">
+                <span class="px-2 py-0.5 bg-cyber-cyan text-black text-[9px] font-black font-cyber rounded-md uppercase">NEW</span>
+                <span class="text-xs text-cyber-cyan font-mono font-bold bg-black/60 px-1.5 py-0.5 rounded">96.7%</span>
+              </div>
+              <div class="relative z-10 text-center my-1">
+                <h3 class="font-cyber font-black text-xs text-white drop-shadow-md">BIG BASS SPLASH</h3>
+              </div>
+              <div class="overlay">
+                <h4 class="font-cyber font-bold text-xs text-white">Big Bass Splash</h4>
+                <button onclick="openSlotGame('fish')" class="px-4 py-1.5 bg-cyber-cyan text-black font-cyber font-black text-xs rounded-xl">
+                  Играть
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 4: Сокровища фараона -->
+            <div class="game-card-hover glass-card border border-amber-500/40 h-52 flex flex-col justify-between p-3 relative group" data-cat="all popular">
+              <img data-art="cover_book" alt="Сокровища фараона" class="absolute inset-0 w-full h-full object-cover rounded-2xl opacity-75 group-hover:opacity-40 transition">
+              <div class="absolute inset-0 bg-gradient-to-t from-cyber-bg via-transparent to-black/60 rounded-2xl"></div>
+              
+              <div class="relative z-10 flex justify-between items-start">
+                <span class="px-2 py-0.5 bg-amber-500 text-black text-[9px] font-black font-cyber rounded-md uppercase">TOP</span>
+                <span class="text-xs text-cyber-cyan font-mono font-bold bg-black/60 px-1.5 py-0.5 rounded">95.1%</span>
+              </div>
+              <div class="relative z-10 text-center my-1">
+                <h3 class="font-cyber font-black text-xs text-white drop-shadow-md">СОКРОВИЩА ФАРАОНА</h3>
+              </div>
+              <div class="overlay">
+                <h4 class="font-cyber font-bold text-xs text-white">Сокровища фараона</h4>
+                <button onclick="openSlotGame('book')" class="px-4 py-1.5 bg-amber-500 text-black font-cyber font-black text-xs rounded-xl">
+                  Играть
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- ==================== TAB 2: SLOTS HUB ==================== -->
+        <section id="tab-slots-hub" class="tab-content hidden space-y-5">
+          
+          <div class="glass-panel rounded-3xl p-5 border border-cyber-pink/40 shadow-2xl relative glow-pink-box">
+            <div class="flex items-center justify-between border-b border-cyber-pink/30 pb-3 mb-4">
+              <div>
+                <h2 class="font-cyber font-black text-xl text-white tracking-wider">Каталог игровых слотов</h2>
+                <p class="text-xs text-cyber-cyan font-mono">Выберите слот для начала игры в казино Burmalda</p>
+              </div>
+            </div>
+
+            <!-- Slots Grid inside Slots Hub -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              
+              <!-- Slot Item 1: The Dog House Megaways 1000 -->
+              <div class="glass-card rounded-2xl overflow-hidden border border-cyber-pink/40 hover:border-cyber-pink transition duration-300 flex flex-col justify-between group bg-[#12261D]/50">
+                <div class="relative h-44 overflow-hidden bg-[#1D372B]">
+                  <img data-art="cover_dog" alt="Dog House Megaways" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                  <div class="absolute top-2 left-2 bg-cyber-pink text-white font-cyber font-bold text-[9px] px-2 py-0.5 rounded">PRAGMATIC</div>
+                  <div class="absolute top-2 right-2 bg-black/70 text-cyber-lime font-mono text-[10px] px-2 py-0.5 rounded">RTP 96.5%</div>
+                </div>
+                <div class="p-3 space-y-2">
+                  <h3 class="font-cyber font-bold text-sm text-white">The Dog House Megaways</h3>
+                  <p class="text-[11px] text-slate-300 line-clamp-2">Легендарный слот с собачками, бесплатными вращениями и липкими Wild множителями!</p>
+                  <button onclick="openSlotGame('doghouse')" class="w-full py-2 bg-cyber-pink hover:from-cyber-pink/90 text-white font-cyber font-bold text-xs rounded-xl shadow-[0_0_12px_#ff007f] transition">
+                    ИГРАТЬ В DOG HOUSE
+                  </button>
+                </div>
+              </div>
+
+              <!-- Slot Item 2: Fortune Fruit Slots -->
+              <div class="glass-card rounded-2xl overflow-hidden border border-cyber-cyan/40 hover:border-cyber-cyan transition duration-300 flex flex-col justify-between group bg-[#12261D]/50">
+                <div class="relative h-44 overflow-hidden bg-[#1D372B]">
+                  <img data-art="cover_fruit" alt="Fortune Fruit Slots" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                  <div class="absolute top-2 left-2 bg-cyber-cyan text-black font-cyber font-bold text-[9px] px-2 py-0.5 rounded">CLASSIC 5x3</div>
+                  <div class="absolute top-2 right-2 bg-black/70 text-cyber-lime font-mono text-[10px] px-2 py-0.5 rounded">RTP 96.4%</div>
+                </div>
+                <div class="p-3 space-y-2">
+                  <h3 class="font-cyber font-bold text-sm text-white">Fortune Fruit Slots</h3>
+                  <p class="text-[11px] text-slate-300 line-clamp-2">Сочные фрукты, семерки и золотые звезды с непрерывными каскадными выплатами.</p>
+                  <button onclick="openSlotGame('fruit')" class="w-full py-2 bg-cyber-cyan hover:from-cyber-cyan/90 text-black font-cyber font-bold text-xs rounded-xl shadow-[0_0_12px_#00e5ff] transition">
+                    ИГРАТЬ В FRUIT SLOTS
+                  </button>
+                </div>
+              </div>
+
+              <!-- Slot Item 3: Big Bass Splash -->
+              <div class="glass-card rounded-2xl overflow-hidden border border-[#7A2E38]/40 hover:border-[#D4A94F] transition duration-300 flex flex-col justify-between group bg-slate-900/50">
+                <div class="relative h-44 overflow-hidden bg-[#12261D]">
+                  <img data-art="cover_fish" alt="Big Bass Splash" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                  <div class="absolute top-2 left-2 bg-[#7A2E38] text-white font-cyber font-bold text-[9px] px-2 py-0.5 rounded">FISHING</div>
+                  <div class="absolute top-2 right-2 bg-black/70 text-cyber-lime font-mono text-[10px] px-2 py-0.5 rounded">RTP 96.7%</div>
+                </div>
+                <div class="p-3 space-y-2">
+                  <h3 class="font-cyber font-bold text-sm text-white">Big Bass Splash</h3>
+                  <p class="text-[11px] text-slate-300 line-clamp-2">Закидывайте удочку и ловите крупную рыбу с денежными бонусами рыбака!</p>
+                  <button onclick="openSlotGame('fish')" class="w-full py-2 bg-[#7A2E38] hover:bg-[#7A2E38] text-white font-cyber font-bold text-xs rounded-xl shadow-[0_0_12px_rgba(37,99,235,0.5)] transition">
+                    ИГРАТЬ В BIG BASS
+                  </button>
+                </div>
+              </div>
+
+              <!-- Slot Item 4: Сокровища фараона -->
+              <div class="glass-card rounded-2xl overflow-hidden border border-amber-500/40 hover:border-amber-400 transition duration-300 flex flex-col justify-between group bg-amber-950/40">
+                <div class="relative h-44 overflow-hidden bg-amber-900">
+                  <img data-art="cover_book" alt="Сокровища фараона" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                  <div class="absolute top-2 left-2 bg-amber-500 text-black font-cyber font-bold text-[9px] px-2 py-0.5 rounded">BOOKS</div>
+                  <div class="absolute top-2 right-2 bg-black/70 text-cyber-lime font-mono text-[10px] px-2 py-0.5 rounded">RTP 95.1%</div>
+                </div>
+                <div class="p-3 space-y-2">
+                  <h3 class="font-cyber font-bold text-sm text-white">Сокровища фараона</h3>
+                  <p class="text-[11px] text-slate-300 line-clamp-2">Раскройте сокровища египетских фараонов в классической книжке!</p>
+                  <button onclick="openSlotGame('book')" class="w-full py-2 bg-amber-500 hover:bg-amber-400 text-black font-cyber font-bold text-xs rounded-xl shadow-[0_0_12px_rgba(245,158,11,0.5)] transition">
+                    ИГРАТЬ
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- ==================== TAB 3: ACTIVE GAME CONTAINER (DOG HOUSE WITH REAL SYMBOL IMAGES) ==================== -->
+        <section id="tab-doghouse" class="tab-content hidden space-y-4">
+          <div id="dh-panel" class="glass-panel rounded-3xl p-4 sm:p-6 border border-cyber-pink/40 shadow-2xl relative glow-pink-box">
+            <div class="flex flex-wrap items-center justify-between border-b border-cyber-pink/30 pb-3 mb-4 gap-2">
+              <div class="flex items-center space-x-3">
+                <button onclick="switchTab('tab-slots-hub')" class="px-3 py-1 bg-cyber-bg border border-cyber-pink/40 text-cyber-cyan hover:border-cyber-cyan font-cyber font-bold text-xs rounded-xl transition">← К слотам</button>
+                <div>
+                  <h2 id="active-slot-title" class="font-cyber font-black text-lg sm:text-xl text-white tracking-wider">Собачья будка</h2>
+                  <span class="text-[10px] text-cyber-cyan font-mono block">5×3 · 20 линий · липкие Wild ×2 / ×3</span>
+                </div>
+              </div>
+              <div id="dh-fs-box" class="hidden bg-cyber-card border border-cyber-yellow/70 px-3 py-1 rounded-xl text-right">
+                <span class="text-[10px] text-cyber-yellow font-bold block">Бесплатные спины: <b id="dh-fs-left" class="font-cyber text-white">0</b></span>
+                <span id="dh-fs-win" class="text-xs font-cyber font-bold text-cyber-lime">0.00 EUR</span>
+              </div>
+            </div>
+            <div id="dh-loader" class="mb-3"><div class="h-1 bg-cyber-bg rounded"><div id="dh-load-bar" class="h-1 bg-cyber-cyan rounded transition-all" style="width:0"></div></div></div>
+            <div id="doghouse-grid" class="grid grid-cols-5 gap-1.5 sm:gap-2 mb-4 relative">
+              <div class="reel-window"><div id="dh-strip-0" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="dh-strip-1" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="dh-strip-2" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="dh-strip-3" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="dh-strip-4" class="reel-strip"></div></div>
+              <div id="dh-win-overlay" class="hidden absolute inset-0 bg-cyber-bg/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-4 z-30 rounded-2xl border border-cyber-cyan">
+                <div id="dh-ov-title" class="text-cyber-cyan font-cyber font-black text-2xl sm:text-4xl tracking-widest mb-1">Выигрыш</div>
+                <div id="dh-win-amount" class="text-white font-cyber font-black text-2xl mb-2"></div>
+              </div>
+            </div>
+            <div class="glass-card rounded-2xl p-3 sm:p-4 flex flex-col md:flex-row items-center justify-between gap-4 border border-cyber-pink/30">
+              <div class="flex items-center space-x-6 text-xs">
+                <div><span class="text-slate-400 font-bold block text-[9px]">Баланс</span><span id="dh-credit-display" class="font-cyber font-extrabold text-white text-sm">100.00 EUR</span></div>
+                <div><span class="text-slate-400 font-bold block text-[9px]">Ставка</span>
+                  <div class="flex items-center space-x-1.5 mt-0.5">
+                    <button aria-label="Уменьшить ставку" onclick="adjustDhBet(-1)" class="w-6 h-6 bg-cyber-pink/30 hover:bg-cyber-pink text-white rounded-lg font-black">-</button>
+                    <span id="dh-bet-display" class="font-mono font-bold text-cyber-cyan text-xs">1.00 EUR</span>
+                    <button aria-label="Увеличить ставку" onclick="adjustDhBet(1)" class="w-6 h-6 bg-cyber-pink/30 hover:bg-cyber-pink text-white rounded-lg font-black">+</button>
+                  </div></div>
+              </div>
+              <div class="text-center"><span class="text-[9px] text-cyber-cyan font-bold block">Последний выигрыш</span><span id="dh-last-win" class="text-lg font-cyber font-black text-cyber-lime">0.00 EUR</span></div>
+              <div class="flex items-center space-x-2">
+                <button id="dh-auto-btn" onclick="toggleDhAutoSpin()" class="px-3 py-2.5 bg-cyber-bg border border-cyber-pink/40 text-slate-200 text-xs font-cyber rounded-xl hover:border-cyber-cyan transition">Авто</button>
+                <button id="dh-spin-btn" onclick="executeDhSpin()" class="px-6 py-2.5 bg-cyber-pink text-white font-cyber font-black text-sm tracking-wider rounded-xl shadow-[0_0_15px_#ff007f] transition active:scale-95">Спин</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section id="tab-fruit" class="tab-content hidden space-y-4">
+          <div id="fr-panel" class="glass-panel rounded-3xl p-4 sm:p-6 border border-cyber-pink/40 shadow-2xl relative">
+            <div class="flex flex-wrap items-center justify-between border-b border-cyber-pink/30 pb-3 mb-4 gap-2">
+              <div class="flex items-center space-x-3">
+                <button onclick="switchTab('tab-slots-hub')" class="px-3 py-1 bg-cyber-bg border border-cyber-pink/40 text-cyber-cyan hover:border-cyber-cyan font-cyber font-bold text-xs rounded-xl transition">← К слотам</button>
+                <div><h2 class="font-cyber font-black text-lg sm:text-xl text-white tracking-wider">Fortune Fruit Slots</h2>
+                <span class="text-[10px] text-cyber-cyan font-mono block">5×3 · 20 линий · гэмбл-карта · множитель в бонусе</span></div>
+              </div>
+              <div id="fr-fs-box" class="hidden bg-cyber-card border border-cyber-yellow/70 px-3 py-1 rounded-xl text-right">
+                <span class="text-[10px] text-cyber-yellow font-bold block">Спинов: <b id="fr-fs-left" class="font-cyber text-white">0</b></span>
+                <span id="fr-fs-mult" class="text-xs font-cyber font-bold text-cyber-lime">×2</span>
+              </div>
+            </div>
+            <div id="fr-grid" class="grid grid-cols-5 gap-1.5 sm:gap-2 mb-4 relative">
+              <div class="reel-window"><div id="fr-strip-0" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="fr-strip-1" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="fr-strip-2" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="fr-strip-3" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="fr-strip-4" class="reel-strip"></div></div>
+              <div id="fr-win-overlay" class="hidden absolute inset-0 bg-cyber-bg/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-4 z-30 rounded-2xl border border-cyber-cyan">
+                <div id="fr-ov-title" class="text-cyber-cyan font-cyber font-black text-2xl sm:text-4xl tracking-widest mb-1">ВЫИГРЫШ</div>
+                <div id="fr-win-amount" class="text-white font-cyber font-black text-2xl mb-2"></div>
+              </div>
+            </div>
+            <div id="fr-gamble-box" class="hidden glass-card rounded-2xl p-3 mb-3 border border-cyber-yellow/60 text-center space-y-2">
+              <p class="text-xs text-cyber-yellow font-bold">Гэмбл: удвоить <span id="fr-gamble-amount"></span>?</p>
+              <div class="flex justify-center gap-2">
+                <button onclick="frGamble('red')" class="px-4 py-1.5 bg-[#B5382C] text-white font-cyber font-bold text-xs rounded-xl">Красное</button>
+                <button onclick="frGamble('black')" class="px-4 py-1.5 bg-[#1D372B] border border-white/30 text-white font-cyber font-bold text-xs rounded-xl">Чёрное</button>
+                <button onclick="frGambleCollect()" class="px-4 py-1.5 bg-cyber-yellow text-black font-cyber font-bold text-xs rounded-xl">Забрать</button>
+              </div>
+              <p id="fr-gamble-result" class="text-[10px] text-slate-300"></p>
+            </div>
+            <div class="glass-card rounded-2xl p-3 sm:p-4 flex flex-col md:flex-row items-center justify-between gap-4 border border-cyber-pink/30">
+              <div class="flex items-center space-x-6 text-xs">
+                <div><span class="text-slate-400 font-bold block text-[9px]">Баланс</span><span id="fr-credit-display" class="font-cyber font-extrabold text-white text-sm">100.00 EUR</span></div>
+                <div><span class="text-slate-400 font-bold block text-[9px]">Ставка</span>
+                  <div class="flex items-center space-x-1.5 mt-0.5">
+                    <button aria-label="Уменьшить ставку" onclick="adjustFrBet(-1)" class="w-6 h-6 bg-cyber-pink/30 hover:bg-cyber-pink text-white rounded-lg font-black">-</button>
+                    <span id="fr-bet-display" class="font-mono font-bold text-cyber-cyan text-xs">1.00 EUR</span>
+                    <button aria-label="Увеличить ставку" onclick="adjustFrBet(1)" class="w-6 h-6 bg-cyber-pink/30 hover:bg-cyber-pink text-white rounded-lg font-black">+</button>
+                  </div></div>
+              </div>
+              <div class="text-center"><span class="text-[9px] text-cyber-cyan font-bold block">Последний выигрыш</span><span id="fr-last-win" class="text-lg font-cyber font-black text-cyber-lime">0.00 EUR</span></div>
+              <div class="flex items-center space-x-2">
+                <button id="fr-auto-btn" onclick="toggleFrAuto()" class="px-3 py-2.5 bg-cyber-bg border border-cyber-pink/40 text-slate-200 text-xs font-cyber rounded-xl hover:border-cyber-cyan transition">Авто</button>
+                <button id="fr-spin-btn" onclick="frSpin()" class="px-6 py-2.5 bg-cyber-pink text-white font-cyber font-black text-sm tracking-wider rounded-xl transition active:scale-95">Спин</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-bass" class="tab-content hidden space-y-4">
+          <div id="bb-panel" class="glass-panel rounded-3xl p-4 sm:p-6 border border-cyber-pink/40 shadow-2xl relative">
+            <div class="flex flex-wrap items-center justify-between border-b border-cyber-pink/30 pb-3 mb-4 gap-2">
+              <div class="flex items-center space-x-3">
+                <button onclick="switchTab('tab-slots-hub')" class="px-3 py-1 bg-cyber-bg border border-cyber-pink/40 text-cyber-cyan hover:border-cyber-cyan font-cyber font-bold text-xs rounded-xl transition">← К слотам</button>
+                <div><h2 class="font-cyber font-black text-lg sm:text-xl text-white tracking-wider">Big Bass Splash</h2>
+                <span class="text-[10px] text-cyber-cyan font-mono block">5×3 · 20 линий · Рыбак Wild собирает деньги</span></div>
+              </div>
+              <div id="bb-fs-box" class="hidden bg-cyber-card border border-cyber-yellow/70 px-3 py-1 rounded-xl text-right">
+                <span class="text-[10px] text-cyber-yellow font-bold block">Спинов: <b id="bb-fs-left" class="font-cyber text-white">0</b></span>
+                <span id="bb-fs-mult" class="text-xs font-cyber font-bold text-cyber-lime">×1</span>
+              </div>
+            </div>
+            <div id="bb-grid" class="grid grid-cols-5 gap-1.5 sm:gap-2 mb-4 relative">
+              <div class="reel-window"><div id="bb-strip-0" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="bb-strip-1" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="bb-strip-2" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="bb-strip-3" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="bb-strip-4" class="reel-strip"></div></div>
+              <div id="bb-win-overlay" class="hidden absolute inset-0 bg-cyber-bg/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-4 z-30 rounded-2xl border border-cyber-cyan">
+                <div id="bb-ov-title" class="text-cyber-cyan font-cyber font-black text-2xl sm:text-4xl tracking-widest mb-1">ВЫИГРЫШ</div>
+                <div id="bb-win-amount" class="text-white font-cyber font-black text-2xl mb-2"></div>
+              </div>
+            </div>
+            <div class="glass-card rounded-2xl p-3 sm:p-4 flex flex-col md:flex-row items-center justify-between gap-4 border border-cyber-pink/30">
+              <div class="flex items-center space-x-6 text-xs">
+                <div><span class="text-slate-400 font-bold block text-[9px]">Баланс</span><span id="bb-credit-display" class="font-cyber font-extrabold text-white text-sm">100.00 EUR</span></div>
+                <div><span class="text-slate-400 font-bold block text-[9px]">Ставка</span>
+                  <div class="flex items-center space-x-1.5 mt-0.5">
+                    <button aria-label="Уменьшить ставку" onclick="adjustBbBet(-1)" class="w-6 h-6 bg-cyber-pink/30 hover:bg-cyber-pink text-white rounded-lg font-black">-</button>
+                    <span id="bb-bet-display" class="font-mono font-bold text-cyber-cyan text-xs">1.00 EUR</span>
+                    <button aria-label="Увеличить ставку" onclick="adjustBbBet(1)" class="w-6 h-6 bg-cyber-pink/30 hover:bg-cyber-pink text-white rounded-lg font-black">+</button>
+                  </div></div>
+              </div>
+              <div class="text-center"><span class="text-[9px] text-cyber-cyan font-bold block">Последний выигрыш</span><span id="bb-last-win" class="text-lg font-cyber font-black text-cyber-lime">0.00 EUR</span></div>
+              <div class="flex items-center space-x-2">
+                <button id="bb-auto-btn" onclick="toggleBbAuto()" class="px-3 py-2.5 bg-cyber-bg border border-cyber-pink/40 text-slate-200 text-xs font-cyber rounded-xl hover:border-cyber-cyan transition">Авто</button>
+                <button id="bb-spin-btn" onclick="bbSpin()" class="px-6 py-2.5 bg-cyber-pink text-white font-cyber font-black text-sm tracking-wider rounded-xl transition active:scale-95">Спин</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-book" class="tab-content hidden space-y-4">
+          <div id="ph-panel" class="glass-panel rounded-3xl p-4 sm:p-6 border border-cyber-pink/40 shadow-2xl relative">
+            <div class="flex flex-wrap items-center justify-between border-b border-cyber-pink/30 pb-3 mb-4 gap-2">
+              <div class="flex items-center space-x-3">
+                <button onclick="switchTab('tab-slots-hub')" class="px-3 py-1 bg-cyber-bg border border-cyber-pink/40 text-cyber-cyan hover:border-cyber-cyan font-cyber font-bold text-xs rounded-xl transition">← К слотам</button>
+                <div><h2 class="font-cyber font-black text-lg sm:text-xl text-white tracking-wider">Сокровища фараона</h2>
+                <span class="text-[10px] text-cyber-cyan font-mono block">5×3 · 20 линий · расширяющийся символ в бонусе</span></div>
+              </div>
+              <div id="ph-fs-box" class="hidden bg-cyber-card border border-cyber-yellow/70 px-3 py-1 rounded-xl text-right">
+                <span class="text-[10px] text-cyber-yellow font-bold block">Спинов: <b id="ph-fs-left" class="font-cyber text-white">0</b></span>
+                <span id="ph-fs-mult" class="text-xs font-cyber font-bold text-cyber-lime"></span>
+              </div>
+            </div>
+            <div id="ph-grid" class="grid grid-cols-5 gap-1.5 sm:gap-2 mb-4 relative">
+              <div class="reel-window"><div id="ph-strip-0" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="ph-strip-1" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="ph-strip-2" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="ph-strip-3" class="reel-strip"></div></div>
+              <div class="reel-window"><div id="ph-strip-4" class="reel-strip"></div></div>
+              <div id="ph-win-overlay" class="hidden absolute inset-0 bg-cyber-bg/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-4 z-30 rounded-2xl border border-cyber-cyan">
+                <div id="ph-ov-title" class="text-cyber-cyan font-cyber font-black text-2xl sm:text-4xl tracking-widest mb-1">ВЫИГРЫШ</div>
+                <div id="ph-win-amount" class="text-white font-cyber font-black text-2xl mb-2"></div>
+              </div>
+            </div>
+            <div class="glass-card rounded-2xl p-3 sm:p-4 flex flex-col md:flex-row items-center justify-between gap-4 border border-cyber-pink/30">
+              <div class="flex items-center space-x-6 text-xs">
+                <div><span class="text-slate-400 font-bold block text-[9px]">Баланс</span><span id="ph-credit-display" class="font-cyber font-extrabold text-white text-sm">100.00 EUR</span></div>
+                <div><span class="text-slate-400 font-bold block text-[9px]">Ставка</span>
+                  <div class="flex items-center space-x-1.5 mt-0.5">
+                    <button aria-label="Уменьшить ставку" onclick="adjustPhBet(-1)" class="w-6 h-6 bg-cyber-pink/30 hover:bg-cyber-pink text-white rounded-lg font-black">-</button>
+                    <span id="ph-bet-display" class="font-mono font-bold text-cyber-cyan text-xs">1.00 EUR</span>
+                    <button aria-label="Увеличить ставку" onclick="adjustPhBet(1)" class="w-6 h-6 bg-cyber-pink/30 hover:bg-cyber-pink text-white rounded-lg font-black">+</button>
+                  </div></div>
+              </div>
+              <div class="text-center"><span class="text-[9px] text-cyber-cyan font-bold block">Последний выигрыш</span><span id="ph-last-win" class="text-lg font-cyber font-black text-cyber-lime">0.00 EUR</span></div>
+              <div class="flex items-center space-x-2">
+                <button id="ph-auto-btn" onclick="togglePhAuto()" class="px-3 py-2.5 bg-cyber-bg border border-cyber-pink/40 text-slate-200 text-xs font-cyber rounded-xl hover:border-cyber-cyan transition">Авто</button>
+                <button id="ph-spin-btn" onclick="phSpin()" class="px-6 py-2.5 bg-cyber-pink text-white font-cyber font-black text-sm tracking-wider rounded-xl transition active:scale-95">Спин</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 4: BLACKJACK VIP ==================== -->
+        <section id="tab-blackjack" class="tab-content hidden space-y-4">
+
+          <div class="bj-table-felt rounded-3xl p-5 sm:p-7 shadow-2xl overflow-hidden min-h-[560px] flex flex-col justify-between">
+
+            <div class="bj-arc-line"></div>
+            <div class="bj-shoe" aria-hidden="true"></div>
+            <div class="bj-felt-mark" style="top:19%;font-size:15px">Blackjack pays 3 to 2</div>
+            <div class="bj-felt-mark" style="top:25%;font-size:10px">Дилер останавливается на 17</div>
+
+            <!-- Table Header Bar -->
+            <div class="relative z-10 flex flex-wrap items-center justify-between border-b border-cyber-pink/30 pb-3 gap-2">
+              <div>
+                <h2 class="font-cyber font-black text-xl text-white tracking-widest uppercase">Блекджек VIP</h2>
+                <span class="text-[10px] text-cyber-pink font-mono block">Выплата 3 к 2 · Страховка 2 к 1</span>
+              </div>
+              <div class="bg-black/60 border border-cyber-pink/40 px-3 py-1 rounded-xl text-right">
+                <span class="text-[9px] text-slate-400 font-bold uppercase block">Баланс стола</span>
+                <span id="bj-table-balance" class="text-sm font-cyber font-black text-cyber-cyan">100.00 EUR</span>
+              </div>
+            </div>
+
+            <!-- Status Banner -->
+            <div id="bj-status-banner" class="relative z-10 text-center py-2.5 px-4 rounded-2xl font-cyber font-bold text-xs sm:text-sm glass-panel text-cyber-cyan border border-cyber-cyan/40 my-2">
+              Поставьте фишки в зону ставки и нажмите «Сдать»
+            </div>
+
+            <!-- Insurance prompt -->
+            <div id="bj-insurance-box" class="hidden relative z-10 text-center py-2.5 px-4 rounded-2xl font-cyber font-bold text-xs glass-card border border-cyber-yellow/60 my-2">
+              У дилера туз. Застраховаться за <span id="bj-ins-amt">0.00 EUR</span>?
+              <div class="flex justify-center gap-2 mt-2">
+                <button onclick="bjInsurance(true)" class="px-4 py-1.5 bg-cyber-yellow text-black font-cyber font-bold text-xs rounded-xl">Да, страховка</button>
+                <button onclick="bjInsurance(false)" class="px-4 py-1.5 bg-cyber-bg border border-white/30 text-white font-cyber font-bold text-xs rounded-xl">Нет</button>
+              </div>
+            </div>
+
+            <!-- Dealer Hand Area -->
+            <div class="relative z-10 my-2 text-center">
+              <div class="flex items-center justify-center space-x-2 mb-2">
+                <span class="text-[10px] text-slate-300 font-cyber font-bold uppercase tracking-wider">Дилер:</span>
+                <span id="bj-dealer-score" class="px-2.5 py-0.5 bg-black/80 text-cyber-lime font-mono font-bold text-xs rounded-lg border border-cyber-pink/40">—</span>
+              </div>
+              <div id="bj-dealer-cards" class="flex justify-center -space-x-8 min-h-[105px] items-center"></div>
+            </div>
+
+            <!-- Betting spot (before deal) -->
+            <div id="bj-betspot-wrap" class="relative z-10 my-3">
+              <div id="bj-betspot" class="bj-betspot">
+                <span class="bj-betspot-label">Зона ставки</span>
+              </div>
+            </div>
+
+            <!-- Player hands (after deal) -->
+            <div id="bj-hands" class="relative z-10 my-2 flex justify-center gap-6 flex-wrap"></div>
+
+            <!-- Settlement overlay -->
+            <div id="bj-settle-overlay" class="hidden">
+              <div id="bj-settle-title" class="font-cyber font-black text-2xl sm:text-3xl text-white tracking-widest mb-2">ПОБЕДА</div>
+              <div id="bj-settle-amount" class="font-cyber font-black text-xl text-cyber-lime mb-4">+0.00 EUR</div>
+              <div class="flex gap-3">
+                <button onclick="bjRebet()" class="px-5 py-2.5 bg-cyber-pink text-white font-cyber font-bold text-xs rounded-xl">Повторить ставку</button>
+                <button onclick="bjNewBet()" class="px-5 py-2.5 bg-cyber-bg border border-white/30 text-white font-cyber font-bold text-xs rounded-xl">Новая ставка</button>
+              </div>
+            </div>
+
+            <!-- Controls & Chips Bar -->
+            <div class="relative z-10 glass-card rounded-2xl p-3 sm:p-4 flex flex-col md:flex-row items-center justify-between gap-3 border border-cyber-pink/40">
+
+              <div id="bj-betting-controls" class="flex flex-wrap items-center justify-center gap-3 w-full">
+                <span class="text-slate-300 font-cyber font-bold text-[11px]">Фишки:</span>
+                <div class="flex space-x-2">
+                  <button aria-label="Фишка 2 евро" onclick="bjAddChip(2)" class="chip-btn chip-2">€2</button>
+                  <button aria-label="Фишка 5 евро" onclick="bjAddChip(5)" class="chip-btn chip-5">€5</button>
+                  <button aria-label="Фишка 10 евро" onclick="bjAddChip(10)" class="chip-btn chip-10">€10</button>
+                  <button aria-label="Фишка 25 евро" onclick="bjAddChip(25)" class="chip-btn chip-25">€25</button>
+                </div>
+                <button onclick="bjClearBet()" class="px-3 py-2 bg-cyber-bg border border-cyber-pink/40 text-slate-200 text-[11px] font-cyber rounded-xl hover:border-cyber-cyan transition">Очистить</button>
+                <div class="pl-1">
+                  <span class="text-[9px] text-slate-400 block font-bold">Ставка</span>
+                  <span id="bj-current-bet-display" class="font-mono font-black text-cyber-lime text-sm">0.00 EUR</span>
+                </div>
+                <button id="bj-deal-btn" onclick="bjDeal()" class="px-6 py-2.5 bg-cyber-pink text-white font-cyber font-black text-xs uppercase rounded-xl transition disabled:opacity-30" disabled>
+                  Сдать
+                </button>
+              </div>
+
+              <div id="bj-action-controls" class="hidden flex-wrap items-center justify-center gap-2 w-full">
+                <button id="bj-hit-btn" onclick="bjHit()" aria-label="Взять карту" class="px-4 py-2.5 bg-cyber-cyan disabled:opacity-30 text-black font-cyber font-black text-xs uppercase rounded-xl transition">Hit</button>
+                <button id="bj-stand-btn" onclick="bjStand()" aria-label="Остановиться" class="px-4 py-2.5 bg-[#7A2E38] disabled:opacity-30 text-white font-cyber font-black text-xs uppercase rounded-xl transition">Stand</button>
+                <button id="bj-double-btn" onclick="bjDouble()" aria-label="Удвоить ставку" class="px-4 py-2.5 bg-[#2f6e8e] disabled:opacity-30 text-white font-cyber font-black text-xs uppercase rounded-xl transition">Double</button>
+                <button id="bj-split-btn" onclick="bjSplit()" aria-label="Разделить пару" class="px-4 py-2.5 bg-cyber-yellow disabled:opacity-30 text-black font-cyber font-black text-xs uppercase rounded-xl transition">Split</button>
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- ==================== TAB 5: ADVANCED USER PROFILE CUSTOMIZATION & LOYALTY ==================== -->
+        <section id="tab-profile" class="tab-content hidden space-y-5">
+          
+          <!-- TOP PROFILE CARD WITH CUSTOMIZABLE BANNER -->
+          <div id="prof-banner-card" class="glass-panel rounded-3xl p-6 border border-cyber-pink/50 shadow-2xl relative overflow-hidden bg-gradient-to-r from-[#12261D] via-[#2B1A12] to-[#12261D]">
+            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+              
+              <div class="flex items-center space-x-4">
+                <div class="relative group">
+                  <div class="w-20 h-20 rounded-2xl overflow-hidden border-2 border-cyber-pink p-0.5 shadow-[0_0_20px_#ff007f] bg-cyber-bg">
+                    <img id="prof-current-avatar" data-art="av1" alt="Avatar" class="w-full h-full object-cover">
+                  </div>
+                  <span class="absolute -bottom-1 -right-1 bg-cyber-lime text-black font-cyber font-black text-[9px] px-1.5 py-0.5 rounded-md shadow">
+                    PRO
+                  </span>
+                </div>
+
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <h2 id="prof-display-username" class="text-xl font-cyber font-black text-white">Гость_0417</h2>
+                    <span id="prof-display-title-badge" class="bg-cyber-pink/20 border border-cyber-pink text-cyber-pink font-cyber font-bold text-[10px] px-2 py-0.5 rounded-full">
+                      Завсегдатай
+                    </span>
+                  </div>
+                  <p class="text-xs text-cyber-cyan font-mono mt-1">ID Пользователя: #99821 • Статус: VIP Игрок</p>
+                  
+                  <div class="flex items-center space-x-4 mt-3 text-xs">
+                    <div>
+                      <span class="text-[9px] text-slate-400 block font-bold">Всего спинов</span>
+                      <span id="prof-stat-spins" class="font-cyber font-bold text-white">0</span>
+                    </div>
+                    <div class="border-l border-white/20 pl-4">
+                      <span class="text-[9px] text-slate-400 block font-bold">Макс выигрыш</span>
+                      <span id="prof-stat-maxwin" class="font-cyber font-bold text-cyber-lime">0.00 EUR</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Daily VIP Bonus Claim Button -->
+              <div class="text-center md:text-right space-y-2">
+                <button onclick="claimDailyBonus()" id="claim-bonus-btn" class="px-5 py-2.5 bg-cyber-lime hover:from-cyber-lime/90 text-black font-cyber font-black text-xs rounded-2xl shadow-[0_0_15px_rgba(57,255,20,0.5)] transition transform hover:scale-105">
+                  ЗАБРАТЬ ЕЖЕДНЕВНЫЙ БОНУС (+10 EUR)
+                </button>
+                <span class="block text-[10px] text-slate-400 font-mono">Доступно каждые 24 часа</span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- CUSTOMIZATION SETTINGS & AVATAR PICKER GRID -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            
+            <!-- Customization Controls Box -->
+            <div class="glass-panel rounded-3xl p-5 border border-cyber-pink/30 space-y-4">
+              <h3 class="text-base font-cyber font-bold text-white border-b border-cyber-pink/30 pb-2">
+                Настройки профиля
+              </h3>
+
+              <div class="space-y-3 text-xs">
+                <div>
+                  <label class="block text-slate-300 font-cyber font-bold mb-1">Имя пользователя (Никнейм):</label>
+                  <div class="flex space-x-2">
+                    <input id="custom-username-input" type="text" value="Гость_0417" class="flex-1 px-3 py-2 bg-cyber-bg border border-cyber-pink/40 rounded-xl font-cyber text-white focus:outline-none focus:border-cyber-cyan">
+                    <button onclick="saveUsername()" class="px-4 py-2 bg-cyber-pink hover:bg-cyber-pink/80 text-white font-cyber font-bold rounded-xl transition">
+                      Сохранить
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-slate-300 font-cyber font-bold mb-1">Титул / Статус игрока:</label>
+                  <select id="custom-title-select" onchange="updatePlayerTitle(this.value)" class="w-full px-3 py-2 bg-cyber-bg border border-cyber-pink/40 rounded-xl font-cyber text-cyber-cyan focus:outline-none">
+                    <option value="Завсегдатай">Завсегдатай</option>
+                    <option value="Крупный игрок">Крупный игрок</option>
+                    <option value="Probability Hacker">Probability Hacker</option>
+                    <option value="Slot Master 777">Slot Master 777</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-slate-300 font-cyber font-bold mb-1">Выберите аватар из галереи:</label>
+                  <div class="grid grid-cols-4 gap-2.5 pt-1">
+                    <button onclick="selectAvatar('av1')" class="w-14 h-14 rounded-xl overflow-hidden border-2 border-cyber-pink/50 hover:border-cyber-cyan transition">
+                      <img data-art="av1" alt="Av1" class="w-full h-full object-cover">
+                    </button>
+                    <button onclick="selectAvatar('av2')" class="w-14 h-14 rounded-xl overflow-hidden border-2 border-cyber-pink/50 hover:border-cyber-cyan transition">
+                      <img data-art="av2" alt="Av2" class="w-full h-full object-cover">
+                    </button>
+                    <button onclick="selectAvatar('av3')" class="w-14 h-14 rounded-xl overflow-hidden border-2 border-cyber-pink/50 hover:border-cyber-cyan transition">
+                      <img data-art="av3" alt="Av3" class="w-full h-full object-cover">
+                    </button>
+                    <button onclick="selectAvatar('av4')" class="w-14 h-14 rounded-xl overflow-hidden border-2 border-cyber-pink/50 hover:border-cyber-cyan transition">
+                      <img data-art="av4" alt="Av4" class="w-full h-full object-cover">
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Скрытая кнопка депозита -->
+                <div class="pt-4 mt-2 border-t border-cyber-pink/30">
+                  <label class="block text-slate-500 font-cyber font-bold mb-1 text-[10px] uppercase tracking-wider">Управление счетом:</label>
+                  <button onclick="openDepositModal()" class="px-4 py-2 bg-cyber-bg border border-cyber-lime/30 text-cyber-lime hover:bg-cyber-lime hover:text-black font-cyber font-bold text-xs rounded-xl transition">
+                    Пополнить виртуальный баланс
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Loyalty Level Status Box -->
+            <div id="tab-levels-anchor" class="glass-panel rounded-3xl p-5 border border-cyber-pink/30 space-y-4">
+              <h3 class="text-base font-cyber font-bold text-white border-b border-cyber-pink/30 pb-2">
+                ПРОГРЕСС И VIP УРОВНИ
+              </h3>
+
+              <div class="space-y-3">
+                <div class="flex justify-between items-center text-xs font-bold font-cyber">
+                  <span class="text-cyber-cyan">Текущий уровень: Lv 1 (Rookie)</span>
+                  <span class="text-cyber-pink font-mono">60 / 100 XP</span>
+                </div>
+                <div class="w-full h-3 bg-cyber-bg rounded-full overflow-hidden border border-cyber-pink/40">
+                  <div class="h-full bg-cyber-pink w-[60%]"></div>
+                </div>
+                <p class="text-[11px] text-slate-300">До следующего уровня Lv 2: <strong class="text-cyber-lime">40 XP</strong> (делайте ставки в слотах или блекджеке).</p>
+
+                <!-- Level Rewards Table -->
+                <div class="pt-2 space-y-2">
+                  <span class="text-[10px] font-cyber text-slate-400 block uppercase">Награды уровней:</span>
+                  <div class="p-2.5 bg-cyber-bg/80 border border-cyber-pink/20 rounded-2xl flex justify-between items-center text-xs">
+                    <div>
+                      <span class="font-cyber font-bold text-white block">Level 1 • Rookie</span>
+                      <span class="text-[10px] text-slate-400">Кешбэк 3% • Лимит €5,000</span>
+                    </div>
+                    <span class="text-cyber-lime font-bold">Активен</span>
+                  </div>
+                  <div class="p-2.5 bg-cyber-bg/40 border border-white/5 rounded-2xl flex justify-between items-center text-xs opacity-60">
+                    <div>
+                      <span class="font-cyber font-bold text-white block">Level 2 • Мастер зала</span>
+                      <span class="text-[10px] text-slate-400">Кешбэк 7% • Личный менеджер</span>
+                    </div>
+                    <span class="text-slate-500 font-bold">100 XP</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- BET HISTORY TABLE -->
+          <div class="glass-panel rounded-3xl p-5 border border-cyber-pink/30">
+            <h3 class="text-base font-cyber font-bold text-white mb-3">История Раундов и Игр</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="border-b border-cyber-pink/20 text-slate-400 font-cyber">
+                    <th class="pb-2">Игра</th>
+                    <th class="pb-2">Ставка</th>
+                    <th class="pb-2">Результат</th>
+                    <th class="pb-2">Выигрыш</th>
+                    <th class="pb-2 text-right">Время</th>
+                  </tr>
+                </thead>
+                <tbody id="prof-history-tbody" class="divide-y divide-white/5 font-mono">
+                  <tr><td class="py-2 text-slate-500 italic" colspan="5">История пуста. Сделайте спин!</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==================== TAB 6: ARCHITECTURE & TECH INSPECTOR ==================== -->
+        <section id="tab-tech" class="tab-content hidden space-y-4">
+          
+          <div class="glass-panel rounded-3xl p-5 border border-cyber-pink/30">
+            <h2 class="text-xl font-cyber font-bold text-white mb-1">Инженерный Отчет: Burmalda: MVP</h2>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Архитектура с полной изоляцией клиентского слоя. Транзакции проводятся через PostgreSQL Advisory Locks и WebSocket шлюз Go.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            
+            <div class="glass-panel rounded-3xl p-5 border border-cyber-pink/30">
+              <h3 class="text-sm font-cyber font-bold text-cyber-cyan mb-2">Веса символов генератора (Reel Weights)</h3>
+              <div class="chart-container">
+                <canvas id="weightsChart"></canvas>
+              </div>
+            </div>
+
+            <div class="glass-panel rounded-3xl p-5 border border-cyber-pink/30 flex flex-col justify-between">
+              <div>
+                <h3 class="text-sm font-cyber font-bold text-cyber-pink mb-2">HMAC-SHA256 Provably Fair</h3>
+                <div class="space-y-2 text-xs">
+                  <div>
+                    <label class="block text-slate-400 mb-0.5">Server Seed:</label>
+                    <input id="pf-server-seed" type="text" value="burmalda_secret_seed_2026" class="w-full p-2 bg-cyber-bg border border-cyber-pink/30 rounded-xl font-mono text-white text-xs">
+                  </div>
+                  <div>
+                    <label class="block text-slate-400 mb-0.5">Client Seed:</label>
+                    <input id="pf-client-seed" type="text" value="user_session_99821" class="w-full p-2 bg-cyber-bg border border-cyber-pink/30 rounded-xl font-mono text-white text-xs">
+                  </div>
+                  <button onclick="calculateProvablyFairHash()" class="w-full py-2 bg-cyber-pink hover:bg-cyber-pink/80 text-white font-cyber font-bold rounded-xl text-xs transition">
+                    Рассчитать Хеш
+                  </button>
+                </div>
+              </div>
+              <div class="mt-2 p-2 bg-cyber-bg rounded-xl font-mono text-[11px] border border-cyber-pink/20">
+                <div class="text-slate-500">HMAC Output:</div>
+                <div id="pf-hash-output" class="text-cyber-cyan truncate">Нажмите кнопку...</div>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <!-- DEPOSIT MODAL -->
+  <div id="deposit-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="glass-panel border border-cyber-pink rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl glow-pink-box">
+      <div class="flex justify-between items-center border-b border-cyber-pink/30 pb-2">
+        <h3 class="text-base font-cyber font-bold text-white">Пополнение Баланса</h3>
+        <button onclick="closeDepositModal()" class="text-slate-400 hover:text-white font-bold">✕</button>
+      </div>
+      <p class="text-xs text-slate-300">Выберите сумму виртуального депозита:</p>
+      <div class="grid grid-cols-3 gap-2">
+        <button onclick="addDeposit(10)" class="py-2.5 bg-cyber-bg border border-cyber-pink/40 hover:border-cyber-cyan text-cyber-cyan font-cyber font-bold rounded-xl text-xs">+ €10</button>
+        <button onclick="addDeposit(50)" class="py-2.5 bg-cyber-bg border border-cyber-pink/40 hover:border-cyber-cyan text-cyber-cyan font-cyber font-bold rounded-xl text-xs">+ €50</button>
+        <button onclick="addDeposit(100)" class="py-2.5 bg-cyber-bg border border-cyber-pink/40 hover:border-cyber-cyan text-cyber-cyan font-cyber font-bold rounded-xl text-xs">+ €100</button>
+      </div>
+      <button onclick="closeDepositModal()" class="w-full py-2 bg-cyber-card border border-white/20 text-white text-xs font-bold rounded-xl">
+        Закрыть
+      </button>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT ENGINE -->
+  <script>
+    /* 1. WEB AUDIO SYNTHESIZER SOUND ENGINE */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      const now = audioCtx.currentTime;
+
+      if (type === 'click') {
+        osc.frequency.setValueAtTime(500, now);
+        gain.gain.setValueAtTime(0.04, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+        osc.start(now);
+        osc.stop(now + 0.04);
+      } else if (type === 'win') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.setValueAtTime(659.25, now + 0.08);
+        osc.frequency.setValueAtTime(783.99, now + 0.16);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+    }
+
+    /* 2. GLOBAL APP STATE */
+    const state = {
+      balance: 100.00,
+      dhBet: 1.00,
+      themeIndex: 0,
+      themes: ['', 'theme-cyan', 'theme-lime', 'theme-purple'],
+
+      betHistory: [],
+      isDhSpinning: false,
+      dhAutoSpin: false,
+      dhSpinCount: 0,
+      maxWin: 0.00,
+
+      // Profile State
+      username: "Гость_0417",
+      avatarUrl: "",
+      playerTitle: "Завсегдатай"
+    };
+
+    function switchTab(tabId) {
+      playSound('click');
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('glow-pink-active', 'text-white');
+        btn.classList.add('border-transparent', 'text-slate-300');
+      });
+
+      document.getElementById(tabId).classList.remove('hidden');
+      const activeBtn = document.getElementById('btn-' + tabId);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-transparent', 'text-slate-300');
+        activeBtn.classList.add('glow-pink-active', 'text-white');
+      }
+
+      if (tabId === 'tab-tech' && !window.weightsChartInstance) {
+        initWeightsChart();
+      }
+    }
+
+    function toggleSettingsDropdown() {
+      playSound('click');
+      const dropdown = document.getElementById('settings-dropdown');
+      dropdown.classList.toggle('hidden');
+    }
+
+    function openSettingsTab(tabId) {
+      document.getElementById('settings-dropdown').classList.add('hidden');
+      if (tabId === 'tab-levels') {
+        switchTab('tab-profile');
+        setTimeout(() => {
+          document.getElementById('tab-levels-anchor').scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      } else {
+        switchTab(tabId);
+      }
+    }
+
+    function setThemeDirect(themeClass) {
+      playSound('click');
+      document.body.className = `bg-cyber-bg text-cyber-text font-sans min-h-screen flex flex-col antialiased selection:bg-cyber-pink selection:text-white ${themeClass}`;
+    }
+
+    function openSlotGame(gameType) {
+      playSound('click');
+      const routes = { doghouse: 'tab-doghouse', fruit: 'tab-fruit', fish: 'tab-bass', book: 'tab-book' };
+      switchTab(routes[gameType] || 'tab-doghouse');
+    }
+
+    function updateBalanceDisplay() {
+      document.getElementById('global-balance').innerText = `${state.balance.toFixed(2)} EUR`;
+      document.getElementById('dh-credit-display').innerText = `${state.balance.toFixed(2)} EUR`;
+      document.getElementById('bj-table-balance').innerText = `${state.balance.toFixed(2)} EUR`;
+      document.getElementById('fr-credit-display').innerText = `${state.balance.toFixed(2)} EUR`;
+      document.getElementById('bb-credit-display').innerText = `${state.balance.toFixed(2)} EUR`;
+      document.getElementById('ph-credit-display').innerText = `${state.balance.toFixed(2)} EUR`;
+    }
+
+    function openDepositModal() { playSound('click'); document.getElementById('deposit-modal').classList.remove('hidden'); }
+    function closeDepositModal() { document.getElementById('deposit-modal').classList.add('hidden'); }
+    
+    function addDeposit(amt) {
+      state.balance += amt;
+      updateBalanceDisplay();
+      closeDepositModal();
+      playSound('win');
+    }
+
+    function claimDailyBonus() {
+      playSound('win');
+      state.balance += 10.00;
+      updateBalanceDisplay();
+      const btn = document.getElementById('claim-bonus-btn');
+      btn.innerText = "БОНУС ПОЛУЧЕН (+10 EUR)";
+      btn.disabled = true;
+      btn.className = "px-5 py-2.5 bg-slate-800 text-slate-400 font-cyber font-bold text-xs rounded-2xl cursor-not-allowed border border-white/10";
+      alert("Ежедневный бонус +10 EUR зачислен на баланс!");
+    }
+
+    /* PROFILE CUSTOMIZATION HANDLERS */
+    function saveUsername() {
+      playSound('click');
+      const val = document.getElementById('custom-username-input').value.trim();
+      if (val) {
+        state.username = val;
+        document.getElementById('header-username').innerText = val;
+        document.getElementById('prof-display-username').innerText = val;
+        alert("Имя пользователя обновлено!");
+      }
+    }
+
+    function updatePlayerTitle(val) {
+      playSound('click');
+      state.playerTitle = val;
+      document.getElementById('prof-display-title-badge').innerText = val;
+    }
+
+    function selectAvatar(url) {
+      url = ART[url] ? U(url) : url;
+      playSound('click');
+      state.avatarUrl = url;
+      document.getElementById('header-avatar-img').src = url;
+      document.getElementById('prof-current-avatar').src = url;
+    }
+
+    function logHistory(game, bet, outcome, win) {
+      const row = {
+        game,
+        bet: `€${bet.toFixed(2)}`,
+        outcome,
+        win: win > 0 ? `+€${win.toFixed(2)}` : '€0.00',
+        time: new Date().toLocaleTimeString()
+      };
+      state.betHistory.unshift(row);
+      if (state.betHistory.length > 8) state.betHistory.pop();
+
+      if (win > state.maxWin) {
+        state.maxWin = win;
+        document.getElementById('prof-stat-maxwin').innerText = `${state.maxWin.toFixed(2)} EUR`;
+      }
+
+      const tbody = document.getElementById('prof-history-tbody');
+      tbody.innerHTML = state.betHistory.map(r => `
+        <tr class="hover:bg-white/5">
+          <td class="py-1.5 font-bold text-cyber-pink">${r.game}</td>
+          <td class="py-1.5">${r.bet}</td>
+          <td class="py-1.5">${r.outcome}</td>
+          <td class="py-1.5 ${r.win.includes('+') ? 'text-cyber-lime font-bold' : 'text-slate-500'}">${r.win}</td>
+          <td class="py-1.5 text-right text-slate-500">${r.time}</td>
+        </tr>
+      `).join('');
+      updateBalanceDisplay();
+    }
+
+    function filterCategory(cat) {
+      playSound('click');
+      const cards = document.querySelectorAll('#games-grid .game-card-hover');
+      cards.forEach(card => {
+        if (cat === 'all' || card.getAttribute('data-cat').includes(cat)) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function handleSearch(query) {
+      const q = query.toLowerCase();
+      const cards = document.querySelectorAll('#games-grid .game-card-hover');
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(q) ? 'flex' : 'none';
+      });
+    }
+
+        /* 3. СЛОТ «СОБАЧЬЯ БУДКА»: движок (см. sim.js) */
+    /*DH-ENGINE-START*/
+    const KEYS=['DOG1','DOG2','DOG3','DOG4','COLLAR','BONE','A','K','Q','J','T','WILD','SCATTER'];
+    const CFG={
+      bets:[10,20,50,100,200,500,1000],          // в центах
+      payDiv:1, /* 20 = выплаты от ставки на линию, 1 = от общей ставки */ cap:6750, fsCount:7, retrigger:false, retriggerSpins:0,
+      wildMults:[[2,1],[3,1]],                    // [множитель, вес]
+      lines:[[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[0,0,1,2,2],[2,2,1,0,0],[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,0],[2,1,1,1,2],[1,0,1,2,1],[1,2,1,0,1],[0,1,0,1,0],[2,1,2,1,2],[1,1,0,1,1],[1,1,2,1,1],[0,0,1,0,0],[2,2,1,2,2],[0,2,0,2,0]],
+      pay:{DOG1:{3:2.5,4:7.5,5:37.5},DOG2:{3:1.75,4:5,5:25},DOG3:{3:1.25,4:3,5:15},DOG4:{3:1,4:2,5:10},COLLAR:{3:.6,4:1.25,5:7.5},BONE:{3:.4,4:1,5:5},A:{3:.25,4:.5,5:2.5},K:{3:.25,4:.5,5:2.5},Q:{3:.1,4:.25,5:1.25},J:{3:.1,4:.25,5:1.25},T:{3:.1,4:.25,5:1.25}},
+      w:{base:{DOG1:4,DOG2:5,DOG3:6,DOG4:7,COLLAR:9,BONE:10,A:12,K:12,Q:14,J:14,T:14,WILD:8,SCATTER:7},
+         fs:{DOG1:4,DOG2:5,DOG3:6,DOG4:7,COLLAR:9,BONE:10,A:12,K:12,Q:14,J:14,T:14,WILD:7,SCATTER:0}}
+    };
+    let rnd=n=>Math.floor(crypto.getRandomValues(new Uint32Array(1))[0]/4294967296*n);
+    const setRng=f=>{rnd=f};
+    const pick=(l,t)=>{let r=rnd(t);for(const x of l){if(r<x[1])return x[0];r-=x[1]}return l[l.length-1][0]};
+    const LC={};
+    function lst(mode,reel){const k=mode+reel;if(LC[k])return LC[k];const l=[];let t=0;
+      for(const s of KEYS){let v=CFG.w[mode][s];if(s==='WILD'&&(reel<1||reel>3))v=0;if(s==='SCATTER'&&reel%2)v=0;if(v>0){l.push([s,v]);t+=v}}
+      return LC[k]={l,t}}
+    function cell(reel,mode){const {l,t}=lst(mode,reel);const s=pick(l,t);
+      return s==='WILD'?{s,m:pick(CFG.wildMults,CFG.wildMults.reduce((a,b)=>a+b[1],0))}:{s}}
+    function genGrid(mode,locks){return [0,1,2,3,4].map(c=>{let sc=false;return [0,1,2].map(r=>{
+      const m=locks&&locks[c+':'+r];if(m)return{s:'WILD',m,lock:1};
+      let x;do{x=cell(c,mode)}while(x.s==='SCATTER'&&sc);if(x.s==='SCATTER')sc=true;return x})})}
+    const scatterHit=g=>[0,2,4].every(c=>g[c].some(x=>x.s==='SCATTER'));
+    function evaluate(g,bet){const wins=[];let total=0;
+      CFG.lines.forEach((ln,i)=>{const f=g[0][ln[0]];if(f.s==='SCATTER'||f.s==='WILD')return;
+        let n=1,M=0;const cells=[[0,ln[0]]];
+        for(let c=1;c<5;c++){const x=g[c][ln[c]];if(x.s===f.s||x.s==='WILD'){n++;if(x.s==='WILD')M+=x.m;cells.push([c,ln[c]])}else break}
+        if(n<3)return;const mult=M||1,amount=Math.round(CFG.pay[f.s][n]*bet/CFG.payDiv*mult);
+        if(amount>0){wins.push({line:i+1,symbol:f.s,count:n,multiplier:mult,amount,cells});total+=amount}});
+      return{wins,total}}
+    function spinBase(bet){const grid=genGrid('base');const e=evaluate(grid,bet);
+      return{grid,wins:e.wins,total_win:Math.min(e.total,CFG.cap*bet),trigger:scatterHit(grid)}}
+    const newFs=()=>({spins_left:CFG.fsCount,locked_wilds:[],bonus_total_win:0});
+    function spinFree(fs,bet,baseWin){const locks={};fs.locked_wilds.forEach(w=>locks[w.reel+':'+w.row]=w.mult);
+      const grid=genGrid('fs',locks);
+      grid.forEach((col,c)=>col.forEach((x,r)=>{if(x.s==='WILD'&&!x.lock){fs.locked_wilds.push({reel:c,row:r,mult:x.m});x.fresh=1}}));
+      const e=evaluate(grid,bet);fs.spins_left--;
+      const win=Math.min(e.total,Math.max(CFG.cap*bet-baseWin-fs.bonus_total_win,0));fs.bonus_total_win+=win;
+      if(CFG.retrigger&&scatterHit(grid))fs.spins_left+=CFG.retriggerSpins;
+      if(baseWin+fs.bonus_total_win>=CFG.cap*bet)fs.spins_left=0;
+      return{grid,wins:e.wins,total_win:win}}
+    /*DH-ENGINE-END*/
+
+    /* «API»: в демо работает локально; на бою вынести на сервер (POST /api/spin) */
+    const SES={fs:null,bet:0,baseWin:0};
+    const API={
+      spin(bet){const bal=Math.round(state.balance*100);
+        if(!CFG.bets.includes(bet))return{error:'Неверная ставка'};
+        if(bal<bet)return{error:'Недостаточно баланса!'};
+        const r=spinBase(bet),after=bal-bet+r.total_win;state.balance=after/100;
+        SES.bet=bet;SES.baseWin=r.total_win;SES.fs=r.trigger?newFs():null;
+        return{grid:r.grid,wins:r.wins,total_win:r.total_win,balance:after,before:bal-bet,free_spins:SES.fs?JSON.parse(JSON.stringify(SES.fs)):null}},
+      free(){const fs=SES.fs,r=spinFree(fs,SES.bet,SES.baseWin);let cr=0;
+        if(fs.spins_left<=0){cr=fs.bonus_total_win;state.balance=Math.round(state.balance*100+cr)/100}
+        const bal=Math.round(state.balance*100),copy=JSON.parse(JSON.stringify(fs));if(fs.spins_left<=0)SES.fs=null;
+        return{grid:r.grid,wins:r.wins,total_win:r.total_win,balance:bal,before:bal-cr,free_spins:copy}}
+    };
+
+    /* Клиент: картинки по манифесту, заглушки при отсутствии файла */
+    const SYMBOL_IMAGES={DOG1:'assets/symbols/dog1.png',DOG2:'assets/symbols/dog2.png',DOG3:'assets/symbols/dog3.png',DOG4:'assets/symbols/dog4.png',COLLAR:'assets/symbols/collar.png',BONE:'assets/symbols/bone.png',A:'assets/symbols/a.png',K:'assets/symbols/k.png',Q:'assets/symbols/q.png',J:'assets/symbols/j.png',T:'assets/symbols/t.png',WILD:'assets/symbols/wild.png',SCATTER:'assets/symbols/scatter.png'};
+    const WILD_BADGES={2:'assets/wild-badges/mult_x2.png',3:'assets/wild-badges/mult_x3.png'};
+    const ALT={DOG1:'Золотистый ретривер',DOG2:'Корги',DOG3:'Бигль',DOG4:'Далматин',COLLAR:'Ошейник',BONE:'Косточка',A:'Туз',K:'Король',Q:'Дама',J:'Валет',T:'Десятка',WILD:'Будка Wild',SCATTER:'Скаттер: лапа',CHERRY:'Вишня',LEMON:'Лимон',ORANGE:'Апельсин',PLUM:'Слива',GRAPE:'Виноград',WATERMELON:'Арбуз',BELL:'Колокольчик',SEVEN:'Золотая семёрка',STAR:'Звезда-скаттер',FISH1:'Крупный окунь',FISH2:'Форель',FISH3:'Сом',FISHERMAN:'Рыбак Wild',HOOK:'Крючок-скаттер',EXPLORER:'Путешественник',STATUE:'Статуя фараона',SCARAB:'Скарабей',ANKH:'Анкх',BOOK:'Древняя книга'};
+    const PHC={DOG1:'#f5b400',DOG2:'#ff8a3d',DOG3:'#c0603a',DOG4:'#9aa0b5',COLLAR:'#ff3d81',BONE:'#b59b6a',A:'#00a8c6',K:'#7e57c2',Q:'#26a69a',J:'#e05555',T:'#8d6e63',WILD:'#b800ff',SCATTER:'#0d47a1'};
+    const svgUri=s=>'data:image/svg+xml;utf8,'+encodeURIComponent(s);
+    const phRed=k=>svgUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect x="8" y="8" width="112" height="112" rx="22" fill="${PHC[k]||'#f00'}" stroke="#12001f" stroke-width="6"/><text x="64" y="74" font-size="28" font-family="sans-serif" font-weight="900" text-anchor="middle" fill="#fff" stroke="#12001f" stroke-width="3" paint-order="stroke">${k}</text></svg>`);
+    const bph=m=>svgUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="${m==2?'#00e5ff':'#ff007f'}" stroke="#12001f" stroke-width="3"/><text x="20" y="26" font-size="16" font-weight="900" font-family="sans-serif" text-anchor="middle" fill="#12001f">×${m}</text></svg>`);
+        /* Встроенная графика: оригинальные SVG-рисунки. Файлы из assets/ имеют приоритет */
+    const INK='#241612',ST=`stroke="${INK}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"`;
+    const ST4=ST.replace('="5"','="4"');
+    const SV=(b,vb='0 0 128 128')=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}">${b}</svg>`;
+    const ear=c=>`<path d="M30 44q-20 18-10 48q17-4 22-26z" fill="${c}"/><path d="M98 44q20 18 10 48q-17-4-22-26z" fill="${c}"/>`;
+    const band=c=>`<path d="M36 100q28 16 56 0l2 10q-30 16-60 0z" fill="${c}" ${ST}/><circle cx="64" cy="116" r="6" fill="#ffd54a" ${ST}/>`;
+    const dogG=o=>`<g ${ST}>${o.ears}<ellipse cx="64" cy="70" rx="38" ry="34" fill="${o.fur}"/>${o.extra||''}<ellipse cx="64" cy="84" rx="20" ry="15" fill="${o.muz}"/></g><circle cx="50" cy="62" r="5" fill="${INK}"/><circle cx="78" cy="62" r="5" fill="${INK}"/><circle cx="52" cy="60" r="1.8" fill="#fff"/><circle cx="80" cy="60" r="1.8" fill="#fff"/><ellipse cx="64" cy="77" rx="8" ry="6" fill="${INK}"/>${o.tongue?`<path d="M58 91q6 15 12 0z" fill="#e8607a" ${ST}/>`:''}<path d="M64 83v6M52 89q12 9 24 0" fill="none" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>${o.collar||''}`;
+    const DOGS={
+      DOG1:{fur:'#e6a93a',muz:'#f6d98f',ears:ear('#b9791d'),tongue:1,collar:band('#ffd54a')},
+      DOG2:{fur:'#f08a3c',muz:'#fff4e6',ears:`<path d="M26 62L30 12L62 38z" fill="#f08a3c"/><path d="M102 62L98 12L66 38z" fill="#f08a3c"/>`,extra:`<path d="M64 38q-11 22 0 44q11-22 0-44z" fill="#fff" stroke="none"/>`,tongue:1},
+      DOG3:{fur:'#c98a52',muz:'#f6ead6',ears:ear('#6b3d1e'),collar:band('#d63a3a')},
+      DOG4:{fur:'#fff',muz:'#fff',ears:ear('#3a3a3a'),extra:`<g fill="${INK}" stroke="none"><circle cx="40" cy="78" r="5"/><circle cx="90" cy="50" r="6"/><circle cx="72" cy="42" r="4"/><circle cx="34" cy="60" r="3"/></g>`,tongue:1}};
+    const HOUSE=`<path d="M16 58L64 12l48 46z" fill="#b5382c" ${ST}/><rect x="24" y="58" width="80" height="54" fill="#d9a05b" ${ST}/><rect x="38" y="62" width="52" height="16" rx="3" fill="#ffd54a" ${ST}/><path d="M52 112V96a12 12 0 0 1 24 0v16z" fill="#2b1a12" ${ST}/>`;
+    const ART={};
+    Object.keys(DOGS).forEach(k=>ART[k]=()=>SV(dogG(DOGS[k])));
+    ART.COLLAR=()=>SV(`<circle cx="64" cy="50" r="32" fill="none" stroke="${INK}" stroke-width="22"/><circle cx="64" cy="50" r="32" fill="none" stroke="#d63a6a" stroke-width="12"/><rect x="56" y="14" width="16" height="14" rx="3" fill="#ffd54a" ${ST}/><path d="M64 118c-22-14-26-27-15-33c6-3 12 0 15 6c3-6 9-9 15-6c11 6 7 19-15 33z" fill="#ffd54a" ${ST}/>`);
+    ART.BONE=()=>SV(`<g transform="rotate(-35 64 64)"><g ${ST} fill="#f7efdc"><circle cx="28" cy="54" r="13"/><circle cx="28" cy="74" r="13"/><circle cx="100" cy="54" r="13"/><circle cx="100" cy="74" r="13"/></g><rect x="30" y="52" width="68" height="24" fill="#f7efdc"/><path d="M30 52h68M30 76h68" stroke="${INK}" stroke-width="5"/><path d="M40 60h40" stroke="#fff" stroke-width="4" stroke-linecap="round"/></g>`);
+    const CARD={A:['#B5382C',64],K:['#2F7A55',64],Q:['#8A5AA8',64],J:['#2E6E8E',64],T:['#B5782C',52]};
+    Object.keys(CARD).forEach(k=>ART[k]=()=>SV(`<rect x="10" y="10" width="108" height="108" rx="20" fill="${CARD[k][0]}" ${ST}/><rect x="19" y="19" width="90" height="90" rx="13" fill="none" stroke="#fff" stroke-width="3" stroke-opacity=".35"/><text x="64" y="${k==='T'?84:88}" font-size="${CARD[k][1]}" font-family="Georgia,serif" font-weight="900" text-anchor="middle" fill="#fff" stroke="${INK}" stroke-width="5" paint-order="stroke">${k==='T'?'10':k}</text>`));
+    ART.WILD=()=>SV(HOUSE+`<text x="64" y="74" font-size="12" font-family="Georgia,serif" font-weight="900" text-anchor="middle" fill="${INK}">WILD</text>`);
+    ART.SCATTER=()=>SV(`<path d="M64 8l46 15v35c0 30-20 50-46 62C38 108 18 88 18 58V23z" fill="#14346b" ${ST}/><g fill="#ffd54a" ${ST}><ellipse cx="64" cy="78" rx="21" ry="17"/><ellipse cx="38" cy="54" rx="8" ry="11" transform="rotate(-20 38 54)"/><ellipse cx="54" cy="40" rx="8" ry="11"/><ellipse cx="74" cy="40" rx="8" ry="11"/><ellipse cx="90" cy="54" rx="8" ry="11" transform="rotate(20 90 54)"/></g>`);
+    ['av1','av2','av3','av4'].forEach((k,i)=>ART[k]=()=>SV(`<rect width="128" height="128" fill="${['#2F7A55','#B5382C','#2E6E8E','#8A5AA8'][i]}"/>`+dogG(DOGS['DOG'+(i+1)])));
+    const CV=(bg,b)=>SV(`<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${bg[0]}"/><stop offset="1" stop-color="${bg[1]}"/></linearGradient></defs><rect width="400" height="240" fill="url(#g)"/>${b}`,'0 0 400 240');
+    const YARD=`<ellipse cx="200" cy="280" rx="330" ry="100" fill="#4c9a4f"/><g ${ST4} fill="#c9a06a">${[0,1,2,3,4,5,6,7].map(i=>`<path d="M${i*54-6} 240V140l22-14 22 14v100z"/>`).join('')}</g>`;
+    ART.cover_dog=()=>CV(['#8fd0e4','#dff1d0'],YARD+`<g transform="translate(60 30) scale(1.5)">${HOUSE}</g><g transform="translate(220 70) scale(1.15)">${dogG(DOGS.DOG1)}</g>`);
+    ART.cover_fruit=()=>CV(['#7a1f2b','#2a0f14'],`<g ${ST4}><path d="M110 108q30-50 60-70M190 127q-6-50-20-90" fill="none"/><circle cx="110" cy="150" r="42" fill="#d63a3a"/><circle cx="190" cy="165" r="38" fill="#c22f3a"/><path d="M170 38q30-16 50 6q-24 16-50-6z" fill="#4c9a4f"/><ellipse cx="290" cy="120" rx="56" ry="40" fill="#ffd54a"/><circle cx="330" cy="190" r="34" fill="#f08a3c"/></g>`);
+    ART.cover_fish=()=>CV(['#4aa3c8','#12466b'],`<g ${ST4}><path d="M250 120l60-40v80z" fill="#f08a3c"/><ellipse cx="180" cy="120" rx="80" ry="46" fill="#f5b342"/><circle cx="130" cy="108" r="9" fill="#fff"/><path d="M180 78q20 40 0 84" fill="none"/></g><circle cx="127" cy="108" r="4" fill="${INK}"/><path d="M0 200q50-16 100 0t100 0 100 0 100 0v40H0z" fill="#0d3553"/>`);
+    ART.cover_book=()=>CV(['#f0b04a','#6b2f14'],`<circle cx="300" cy="70" r="34" fill="#ffe28a"/><g ${ST4}><path d="M40 210L130 80l90 130zM160 210l70-100 70 100z" fill="#c98a3a"/><path d="M130 180l70-16 70 16v46l-70-14-70 14z" fill="#8a2f2f"/><path d="M200 164v48" fill="none"/></g><circle cx="200" cy="190" r="8" fill="#ffd54a"/>`);
+    ART.bg_base=()=>CV(['#a9dbe8','#e4f2d3'],YARD);
+    ART.bg_fs=()=>CV(['#4a2a3a','#e08a3c'],`<circle cx="320" cy="60" r="30" fill="#ffe9b0"/>`+YARD.replace('#4c9a4f','#2f5a3a').replace('#c9a06a','#8a6a4a'));
+    /* ===== Иконки для Fortune Fruit Slots, Big Bass Splash и «Сокровищ фараона» ===== */
+    ART.CHERRY=()=>SV(`<path d="M60 20q6 20-4 34M60 20q14 10 22 28" fill="none" ${ST4}/><circle cx="6" cy="8" r="0" fill="none"/><path d="M64 40q10 6 4 20q-6 6-14 0q-6-14 10-20z" fill="#c62b3a" ${ST}/><circle cx="46" cy="72" r="24" fill="#d63a4a" ${ST}/><circle cx="82" cy="78" r="24" fill="#b5232f" ${ST}/><ellipse cx="38" cy="64" rx="6" ry="4" fill="#fff" opacity=".5"/>`);
+    ART.LEMON=()=>SV(`<ellipse cx="64" cy="68" rx="42" ry="32" fill="#f5d33a" ${ST}/><path d="M64 36q6-14 22-16q-4 14-16 20z" fill="#4c9a4f" ${ST}/><ellipse cx="50" cy="56" rx="10" ry="6" fill="#fff" opacity=".45"/>`);
+    ART.ORANGE=()=>SV(`<circle cx="64" cy="70" r="40" fill="#f08a3c" ${ST}/><path d="M64 30q4-14 20-18q-2 14-14 20z" fill="#4c9a4f" ${ST}/><ellipse cx="48" cy="56" rx="10" ry="7" fill="#fff" opacity=".4"/>`);
+    ART.PLUM=()=>SV(`<circle cx="64" cy="72" r="38" fill="#7a4a9e" ${ST}/><path d="M64 34v-18" fill="none" stroke="#4c9a4f" stroke-width="6" stroke-linecap="round"/><ellipse cx="82" cy="14" rx="14" ry="9" fill="#4c9a4f" ${ST}/><ellipse cx="48" cy="58" rx="9" ry="6" fill="#fff" opacity=".35"/>`);
+    ART.GRAPE=()=>SV(`<path d="M60 10q10 8 4 20" fill="none" stroke="#4c9a4f" stroke-width="5"/><ellipse cx="70" cy="8" rx="12" ry="8" fill="#4c9a4f" ${ST}/><g fill="#6a3fa0" ${ST}>${[[46,40,13],[74,40,13],[36,62,13],[60,62,15],[86,62,13],[48,86,13],[76,86,13],[62,106,12]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>`);
+    ART.WATERMELON=()=>SV(`<circle cx="64" cy="66" r="42" fill="#3f9a4c" ${ST}/><path d="M30 44q34-22 68 0M26 66q38-18 76 0M30 88q34 20 68 0" fill="none" stroke="#1c5a2c" stroke-width="5" stroke-linecap="round"/>`);
+    ART.BELL=()=>SV(`<path d="M64 22a30 30 0 0 1 30 30v18l10 14H24l10-14V52a30 30 0 0 1 30-30z" fill="#f0c23a" ${ST}/><rect x="56" y="10" width="16" height="14" rx="4" fill="#c9962a" ${ST}/><circle cx="64" cy="96" r="9" fill="#c9962a" ${ST}/>`);
+    ART.SEVEN=()=>SV(`<rect x="10" y="10" width="108" height="108" rx="20" fill="#7a1620" ${ST}/><rect x="19" y="19" width="90" height="90" rx="13" fill="none" stroke="#f0c23a" stroke-width="3"/><text x="64" y="90" font-size="70" font-family="Georgia,serif" font-weight="900" text-anchor="middle" fill="#f5d33a" stroke="${INK}" stroke-width="4" paint-order="stroke">7</text>`);
+    ART.STAR=()=>{const pts=[...Array(10)].map((_,i)=>{const a=-Math.PI/2+i*Math.PI/5,r=i%2?22:52;return[64+r*Math.cos(a),64+r*Math.sin(a)]}).map(p=>p.join(',')).join(' ');
+      return SV(`<polygon points="${pts}" fill="#f5d33a" ${ST}/><circle cx="64" cy="64" r="14" fill="#fff8dc" opacity=".55"/>`)};
+    ART.FISH1=()=>SV(`<path d="M96 64l26-22v44z" fill="#c9962a" ${ST}/><ellipse cx="52" cy="64" rx="46" ry="30" fill="#3f8fae" ${ST}/><path d="M20 64q18-30 40-30M20 64q18 30 40 30" fill="none" stroke="#1c5a2c" stroke-width="0"/><circle cx="30" cy="56" r="6" fill="#fff" ${ST}/><circle cx="31" cy="56" r="2.4" fill="${INK}"/><path d="M6 64q10-10 22-4q-12 6-22 4z" fill="#2f7189" ${ST}/>`);
+    ART.FISH2=()=>SV(`<path d="M94 66l28-24v48z" fill="#e08a3c" ${ST}/><ellipse cx="50" cy="66" rx="44" ry="26" fill="#f0a94a" ${ST}/><circle cx="28" cy="58" r="5.5" fill="#fff" ${ST}/><circle cx="29" cy="58" r="2.2" fill="${INK}"/><path d="M40 46q10-4 20 0M40 86q10 4 20 0" fill="none" stroke="#c9711f" stroke-width="4" stroke-linecap="round"/>`);
+    ART.FISH3=()=>SV(`<path d="M92 68l30-16v36z" fill="#7a8290" ${ST}/><ellipse cx="48" cy="68" rx="42" ry="24" fill="#9aa3b0" ${ST}/><circle cx="24" cy="62" r="5" fill="#fff" ${ST}/><circle cx="25" cy="62" r="2" fill="${INK}"/><path d="M8 60q-14-6-20 0M8 68q-14 6-20 0" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`);
+    ART.HOOK=()=>SV(`<circle cx="64" cy="20" r="12" fill="#e0b23a" ${ST}/><path d="M64 32v46a20 20 0 0 0 20 20" fill="none" stroke="#8a8f9a" stroke-width="7" stroke-linecap="round"/><path d="M84 98l10 10-16 4z" fill="#c0c6d0" ${ST}/>`);
+    ART.FISHERMAN=()=>SV(`<circle cx="60" cy="38" r="22" fill="#e0a86a" ${ST}/><path d="M36 30q6-20 30-18q22 2 22 20q-16-10-52-2z" fill="#2f5a3a" ${ST}/><circle cx="52" cy="40" r="3.4" fill="${INK}"/><circle cx="70" cy="40" r="3.4" fill="${INK}"/><path d="M48 50q10 6 20 0" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/><path d="M40 62h40l10 50H30z" fill="#3f6e46" ${ST}/><path d="M96 46L20 118" fill="none" stroke="#8a5a2a" stroke-width="5" stroke-linecap="round"/><path d="M20 118q-6 4-4 10" fill="none" stroke="#c0c6d0" stroke-width="3"/>`);
+    ART.EXPLORER=()=>SV(`<circle cx="64" cy="60" r="28" fill="#d9a05b" ${ST}/><path d="M28 48q6-24 36-26q30 2 36 26q-16-10-36-10t-36 10z" fill="#8a5a2a" ${ST}/><path d="M22 50q42-14 84 0" fill="none" stroke="#6b431e" stroke-width="6" stroke-linecap="round"/><circle cx="52" cy="62" r="4" fill="${INK}"/><circle cx="76" cy="62" r="4" fill="${INK}"/><path d="M50 82q14 8 28 0" fill="none" stroke="${INK}" stroke-width="4" stroke-linecap="round"/><path d="M40 92q24 10 48 0l4 26H36z" fill="#4a6e8a" ${ST}/>`);
+    ART.STATUE=()=>SV(`<path d="M40 30h48l8 20H32z" fill="#e0b23a" ${ST}/><rect x="34" y="50" width="60" height="16" fill="#d9a05b" ${ST}/><path d="M30 66h68l10 46H20z" fill="#c9962a" ${ST}/><circle cx="52" cy="42" r="4" fill="${INK}"/><circle cx="76" cy="42" r="4" fill="${INK}"/><path d="M46 92h36" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`);
+    ART.SCARAB=()=>SV(`<ellipse cx="64" cy="70" rx="34" ry="26" fill="#2f8a5a" ${ST}/><path d="M64 44v52M40 62q24 10 48 0M40 82q24-10 48 0" fill="none" stroke="${INK}" stroke-width="3"/><circle cx="64" cy="34" r="12" fill="#2f8a5a" ${ST}/><path d="M30 46L8 30M30 54L4 50M98 46l22-16M98 54l24-4" fill="none" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`);
+    ART.ANKH=()=>SV(`<circle cx="64" cy="64" r="56" fill="#7a5aa0" ${ST}/><circle cx="64" cy="40" r="16" fill="none" stroke="#f0c23a" stroke-width="8"/><path d="M64 56v46M42 84h44" stroke="#f0c23a" stroke-width="10" stroke-linecap="round"/>`);
+    ART.BOOK=()=>SV(`<path d="M20 24q22-10 44 0v82q-22-10-44 0z" fill="#7a2f2f" ${ST}/><path d="M108 24q-22-10-44 0v82q22-10 44 0z" fill="#8a3a3a" ${ST}/><circle cx="64" cy="62" r="12" fill="#f0c23a" ${ST}/><path d="M64 24v82" stroke="${INK}" stroke-width="3"/>`);
+
+    const U=k=>svgUri(ART[k]());
+    const setBg=fs=>{const d=$('dh-bg');if(d)d.style.backgroundImage=`url("${U(fs?'bg_fs':'bg_base')}")`};
+    function applyArt(){document.querySelectorAll('img[data-art]').forEach(i=>i.src=U(i.dataset.art));state.avatarUrl=U('av1');
+      const p=$('dh-panel');if(p&&!$('dh-bg')){const d=document.createElement('div');d.id='dh-bg';p.prepend(d)}setBg(false)}
+    const ph=k=>ART[k]?U(k):phRed(k);
+    const SRC={},BSRC={2:bph(2),3:bph(3)};KEYS.forEach(k=>SRC[k]=U(k));
+    const $=id=>document.getElementById(id), sleep=ms=>new Promise(r=>setTimeout(r,ms)), CH=83.33;
+    const eur=c=>(c/100).toFixed(2)+' EUR';
+    const imgTag=k=>`<img data-k="${k}" src="${SRC[k]||ph(k)}" alt="${ALT[k]||k}">`;
+    const cellHTML=x=>x.s==='WILD'?imgTag('WILD')+`<img class="dh-badge" data-b="${x.m}" src="${BSRC[x.m]}" alt="Множитель ×${x.m}">`:imgTag(x.s);
+    const cellDiv=(x,id,cls)=>`<div class="reel-cell dh-cell ${cls||''}"${id?` id="${id}"`:''}>${cellHTML(x)}</div>`;
+    let CUR=null,BI=3,busy=false,stops=[];
+    const betC=()=>CFG.bets[BI];
+    function showBal(c){['global-balance','dh-credit-display','bj-table-balance','fr-credit-display','bb-credit-display','ph-credit-display'].forEach(i=>{const e=$(i);if(e)e.innerText=eur(c)})}
+    function adjustDhBet(d){if(busy||SES.fs)return;BI=Math.min(CFG.bets.length-1,Math.max(0,BI+d));state.dhBet=betC()/100;$('dh-bet-display').innerText=eur(betC())}
+    async function preload(){const bar=$('dh-load-bar');const items=[...KEYS.map(k=>[k,SYMBOL_IMAGES[k],'k']),...[2,3].map(m=>[m,WILD_BADGES[m],'b'])];let n=0;
+      await Promise.all(items.map(async([k,u,t])=>{try{const i=new Image();i.src=u;await i.decode();(t==='k'?SRC:BSRC)[k]=u;document.querySelectorAll(`img[data-${t}="${k}"]`).forEach(e=>e.src=u)}catch(e){console.error('Нет файла для ключа '+k+' ('+u+'), используется встроенный рисунок')}bar.style.width=(++n/items.length*100)+'%'}));
+      $('dh-loader').classList.add('hidden')}
+    function initDhStrips(){CUR=genGrid('base');CUR.forEach((col,c)=>{$('dh-strip-'+c).innerHTML=col.map((x,r)=>cellDiv(x,`dh-cell-${c}-${r}`)).join('')});preload()}
+    function drawLocks(fs){for(let c=0;c<5;c++){const w=$('dh-strip-'+c).parentNode;let o=w.querySelector('.dh-lockl');if(!o){o=document.createElement('div');o.className='dh-lockl';w.appendChild(o)}
+      o.innerHTML=fs?fs.locked_wilds.filter(x=>x.reel===c).map(x=>`<div class="dh-lockc" style="top:${x.row*CH}px">${cellHTML({s:'WILD',m:x.mult})}</div>`).join(''):''}}
+    function spinReels(grid){return new Promise(res=>{let left=5;stops=[];const wait=grid[0].some(x=>x.s==='SCATTER')&&grid[2].some(x=>x.s==='SCATTER');
+      for(let c=0;c<5;c++){const st=$('dh-strip-'+c);
+        st.className='reel-strip blur';st.style.transition='none';
+        st.innerHTML=grid[c].map((x,r)=>cellDiv(x,`dh-cell-${c}-${r}`)).join('')+Array.from({length:10},()=>cellDiv(cell(c,'base'))).join('')+CUR[c].map(x=>cellDiv(x)).join('');
+        st.style.transform=`translateY(${-13*CH}px)`;void st.offsetHeight;
+        const dur=650+c*230+(c===4&&wait?800:0);
+        st.style.transition=`transform ${dur}ms cubic-bezier(.2,.8,.3,1.08)`;st.style.transform='translateY(0)';
+        let d=0;const done=()=>{if(d)return;d=1;clearTimeout(t);st.classList.remove('blur');st.style.transition='none';st.style.transform='none';playSound('click');
+          grid[c].forEach((x,r)=>{if((x.s==='WILD'&&!x.lock)||x.s==='SCATTER')$(`dh-cell-${c}-${r}`).classList.add('dh-drop')});if(--left===0)res()};
+        const t=setTimeout(done,dur+40);stops.push(done)}})}
+    function clearWins(){$('doghouse-grid').classList.remove('dimmed');document.querySelectorAll('.reel-cell.dh-win').forEach(e=>e.classList.remove('dh-win'))}
+    function showWins(r){r.wins.forEach(w=>w.cells.forEach(([c,rw])=>{const e=$(`dh-cell-${c}-${rw}`);if(e)e.classList.add('dh-win')}));$('doghouse-grid').classList.toggle('dimmed',r.wins.length>0)}
+    function banner(t,a,ms){return new Promise(r=>{$('dh-ov-title').innerText=t;$('dh-win-amount').innerText=a;$('dh-win-overlay').classList.remove('hidden');setTimeout(()=>{$('dh-win-overlay').classList.add('hidden');r()},ms)})}
+    function setFsUI(fs){setBg(!!fs);$('dh-panel').classList.toggle('fs',!!fs);$('dh-fs-box').classList.toggle('hidden',!fs);if(fs){$('dh-fs-left').innerText=fs.spins_left;$('dh-fs-win').innerText=eur(fs.bonus_total_win)}}
+    async function executeDhSpin(){
+      if(busy){stops.forEach(f=>f());return}
+      busy=true;clearWins();$('dh-win-overlay').classList.add('hidden');
+      const inFs=!!SES.fs,r=inFs?API.free():API.spin(betC());
+      if(r.error){alert(r.error);busy=false;state.dhAutoSpin=false;$('dh-auto-btn').innerText='АВТО';return}
+      showBal(r.before);$('dh-spin-btn').innerText='СТОП';
+      if(!inFs){state.dhSpinCount++;$('prof-stat-spins').innerText=state.dhSpinCount}
+      await spinReels(r.grid);CUR=r.grid;$('dh-spin-btn').innerText='СПИН';
+      const fsd=r.free_spins,over=inFs&&fsd.spins_left<=0;
+      if(inFs)drawLocks(fsd);
+      showWins(r);showBal(over?r.before:r.balance);
+      $('dh-last-win').innerText=eur(r.total_win);
+      if(inFs)setFsUI(fsd);
+      if(r.total_win>0)playSound('win');
+      if(!inFs)logHistory('Собачья будка',betC()/100,r.total_win>0?'Выиграл':'Проиграл',r.total_win/100);
+      await sleep(r.wins.length?1000:300);
+      if(!inFs&&fsd){await banner('БЕСПЛАТНЫЕ СПИНЫ',fsd.spins_left+' спинов',1800);setFsUI(fsd)}
+      else if(!inFs&&r.total_win>=betC()*10)await banner('ВЫИГРЫШ','+ '+eur(r.total_win),1500);
+      if(over){await banner('ИТОГ БОНУСА','+ '+eur(fsd.bonus_total_win),2200);logHistory('Собачья будка: бонус',0,'Бонус',fsd.bonus_total_win/100);showBal(r.balance);setFsUI(null);drawLocks(null)}
+      busy=false;
+      if(SES.fs||state.dhAutoSpin)setTimeout(()=>{if(!busy&&(SES.fs||state.dhAutoSpin))executeDhSpin()},SES.fs?900:1500)}
+    function toggleDhAutoSpin(){state.dhAutoSpin=!state.dhAutoSpin;$('dh-auto-btn').innerText=state.dhAutoSpin?'АВТО: ВКЛ':'АВТО';if(state.dhAutoSpin&&!busy)executeDhSpin()}
+
+    /* 4. BLACKJACK VIP ENGINE: полная логика с дублем, сплитом и страховкой */
+    const SUITS = ['♠', '♥', '♦', '♣'];
+    const VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+    const RU_VAL = {'2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9','10':'10','J':'Валет','Q':'Дама','K':'Король','A':'Туз'};
+    const RU_SUIT = {'♠':'пик','♥':'червей','♦':'бубен','♣':'треф'};
+
+    function createDeck() {
+      const d = [];
+      for (const s of SUITS) for (const v of VALUES) {
+        let w = parseInt(v); if (['J','Q','K'].includes(v)) w = 10; if (v === 'A') w = 11;
+        d.push({ suit: s, value: v, weight: w, isRed: s === '♥' || s === '♦' });
+      }
+      for (let i = d.length - 1; i > 0; i--) { const j = rnd(i + 1); [d[i], d[j]] = [d[j], d[i]]; }
+      return d;
+    }
+    function calcHand(hand) {
+      let score = 0, aces = 0;
+      for (const c of hand) { score += c.weight; if (c.value === 'A') aces++; }
+      while (score > 21 && aces > 0) { score -= 10; aces--; }
+      return score;
+    }
+    function isBust(hand) { return calcHand(hand) > 21; }
+    function isNatural(hand) { return hand.length === 2 && calcHand(hand) === 21; }
+
+    function renderCardHTML(c, opts) {
+      opts = opts || {};
+      if (opts.hidden) return `<div class="playing-card back${opts.flip ? ' card-flip' : ''}" aria-label="Закрытая карта"></div>`;
+      const cls = c.isRed ? 'text-[#B5382C]' : 'text-[#12261D]';
+      return `
+        <div class="playing-card ${cls}${opts.deal ? ' card-deal' : ''}" role="img" aria-label="${RU_VAL[c.value]} ${RU_SUIT[c.suit]}">
+          <div class="text-[9px] font-mono flex justify-between leading-none"><span>${c.value}</span><span>${c.suit}</span></div>
+          <div class="text-center text-lg leading-none">${c.suit}</div>
+          <div class="text-[9px] font-mono flex justify-between leading-none rotate-180"><span>${c.value}</span><span>${c.suit}</span></div>
+        </div>`;
+    }
+
+    const BJ = { deck: [], dealer: [], hands: [], active: 0, insBet: 0, phase: 'BETTING', pending: 0, lastTotalBet: 0 };
+    const bjChipColor = { 2: '#B5382C', 5: '#1D372B', 10: '#7A2E38', 25: '#D4A94F' };
+
+    function bjRenderBetSpot() {
+      const w = $('bj-betspot'); if (!w) return;
+      w.querySelectorAll('.bj-chip').forEach(e => e.remove());
+      const denoms = [25, 10, 5, 2]; let remaining = BJ.pending, i = 0;
+      for (const d of denoms) { while (remaining >= d && i < 8) { remaining -= d; const chip = document.createElement('div');
+        chip.className = 'bj-chip'; chip.style.background = bjChipColor[d]; chip.style.bottom = (6 + i * 10) + 'px'; chip.style.zIndex = i;
+        chip.style.color = d === 25 ? '#241612' : '#fff'; chip.innerText = '€' + d; w.appendChild(chip); i++; } }
+      $('bj-current-bet-display').innerText = eur(Math.round(BJ.pending * 100));
+      $('bj-deal-btn').disabled = BJ.pending <= 0;
+    }
+    function bjAddChip(v) {
+      if (BJ.phase !== 'BETTING') return; playSound('click');
+      if (state.balance < BJ.pending + v) { alert('Недостаточно баланса!'); return; }
+      BJ.pending = Math.round((BJ.pending + v) * 100) / 100; bjRenderBetSpot();
+    }
+    function bjClearBet() { if (BJ.phase !== 'BETTING') return; BJ.pending = 0; bjRenderBetSpot(); }
+
+    function bjSetStatus(t) { $('bj-status-banner').classList.remove('hidden'); $('bj-status-banner').innerText = t; }
+    function bjHideStatus() { $('bj-status-banner').classList.add('hidden'); }
+
+    function bjDeal() {
+      if (BJ.phase !== 'BETTING' || BJ.pending <= 0) return;
+      if (state.balance < BJ.pending) { alert('Недостаточно баланса!'); return; }
+      playSound('click');
+      state.balance -= BJ.pending; showBal(Math.round(state.balance * 100));
+      BJ.lastTotalBet = BJ.pending;
+      BJ.deck = createDeck(); BJ.dealer = []; BJ.hands = [{ cards: [], bet: BJ.pending, done: false, busted: false, result: null, splitAce: false }];
+      BJ.active = 0; BJ.insBet = 0; BJ.pending = 0;
+      $('bj-betspot-wrap').classList.add('hidden'); $('bj-betting-controls').classList.add('hidden');
+      $('bj-settle-overlay').classList.add('hidden');
+
+      BJ.hands[0].cards.push(BJ.deck.pop()); BJ.dealer.push(BJ.deck.pop());
+      BJ.hands[0].cards.push(BJ.deck.pop()); BJ.dealer.push(BJ.deck.pop());
+      BJ.phase = 'PLAYER_TURN';
+      bjRenderTable(true);
+
+      const dealerUp = BJ.dealer[0];
+      if (dealerUp.value === 'A' && !isNatural(BJ.hands[0].cards)) {
+        $('bj-insurance-box').classList.remove('hidden');
+        $('bj-ins-amt').innerText = eur(Math.round(BJ.hands[0].bet * 50));
+        bjSetStatus('Ход игрока приостановлен: решите со страховкой');
+        return;
+      }
+      bjAfterInsuranceCheck();
+    }
+
+    function bjInsurance(take) {
+      $('bj-insurance-box').classList.add('hidden');
+      if (take) {
+        const amt = BJ.hands[0].bet / 2;
+        if (state.balance < amt) { alert('Недостаточно баланса для страховки!'); }
+        else { state.balance -= amt; BJ.insBet = amt; showBal(Math.round(state.balance * 100)); }
+      }
+      bjAfterInsuranceCheck();
+    }
+
+    function bjAfterInsuranceCheck() {
+      const dealerBJ = isNatural(BJ.dealer);
+      const playerBJ = isNatural(BJ.hands[0].cards);
+      if (dealerBJ || playerBJ) { bjRenderTable(true, true); return bjSettleRound(); }
+      bjShowActionControls(); bjUpdateActionButtons(); bjSetStatus('Ваш ход: Hit, Stand' + (bjCanDouble() ? ', Double' : '') + (bjCanSplit() ? ' или Split' : ''));
+    }
+
+    function bjShowActionControls() { $('bj-betting-controls').classList.remove('hidden'); $('bj-betting-controls').classList.add('hidden');
+      $('bj-action-controls').classList.remove('hidden'); $('bj-action-controls').classList.add('flex'); }
+
+    function bjCurHand() { return BJ.hands[BJ.active]; }
+    function bjCanDouble() { const h = bjCurHand(); return h && h.cards.length === 2 && !h.splitAce && state.balance >= h.bet; }
+    function bjCanSplit() { const h = bjCurHand(); return h && BJ.hands.length === 1 && h.cards.length === 2 && h.cards[0].weight === h.cards[1].weight && state.balance >= h.bet; }
+    function bjUpdateActionButtons() {
+      const h = bjCurHand(); const active = BJ.phase === 'PLAYER_TURN' && h && !h.done;
+      $('bj-hit-btn').disabled = !active; $('bj-stand-btn').disabled = !active;
+      $('bj-double-btn').disabled = !active || !bjCanDouble(); $('bj-split-btn').disabled = !active || !bjCanSplit();
+    }
+
+    function bjHit() {
+      if (BJ.phase !== 'PLAYER_TURN') return; playSound('click');
+      const h = bjCurHand(); h.cards.push(BJ.deck.pop());
+      if (isBust(h.cards)) { h.done = true; h.busted = true; }
+      bjRenderTable(true);
+      if (h.done) bjAdvance(); else bjUpdateActionButtons();
+    }
+    function bjStand() { if (BJ.phase !== 'PLAYER_TURN') return; playSound('click'); bjCurHand().done = true; bjAdvance(); }
+    function bjDouble() {
+      if (BJ.phase !== 'PLAYER_TURN' || !bjCanDouble()) return; playSound('click');
+      const h = bjCurHand(); state.balance -= h.bet; h.bet *= 2; showBal(Math.round(state.balance * 100));
+      h.cards.push(BJ.deck.pop()); if (isBust(h.cards)) h.busted = true; h.done = true;
+      bjRenderTable(true); bjAdvance();
+    }
+    function bjSplit() {
+      if (BJ.phase !== 'PLAYER_TURN' || !bjCanSplit()) return; playSound('click');
+      const h = BJ.hands[0]; state.balance -= h.bet; showBal(Math.round(state.balance * 100));
+      const isAce = h.cards[0].value === 'A';
+      const h2 = { cards: [h.cards.pop()], bet: h.bet, done: false, busted: false, result: null, splitAce: isAce };
+      h.cards.push(BJ.deck.pop()); h2.cards.push(BJ.deck.pop());
+      h.splitAce = isAce;
+      if (isAce) { h.done = true; h2.done = true; if (isBust(h.cards)) h.busted = true; if (isBust(h2.cards)) h2.busted = true; }
+      BJ.hands.push(h2);
+      bjRenderTable(true);
+      if (h.done) bjAdvance(); else bjUpdateActionButtons();
+    }
+
+    function bjAdvance() {
+      if (BJ.active < BJ.hands.length - 1 && BJ.hands[BJ.active].done) { BJ.active++; bjUpdateActionButtons(); bjRenderTable(true);
+        bjSetStatus('Рука ' + (BJ.active + 1) + ': ваш ход'); return; }
+      if (BJ.hands.every(h => h.done)) return bjDealerTurn();
+      bjUpdateActionButtons();
+    }
+
+    async function bjDealerTurn() {
+      BJ.phase = 'DEALER_TURN'; $('bj-action-controls').classList.add('hidden'); $('bj-action-controls').classList.remove('flex');
+      bjSetStatus('Дилер открывает карту…');
+      const allBust = BJ.hands.every(h => h.busted);
+      bjRenderTable(true, true);
+      await sleep(700);
+      if (!allBust) {
+        while (calcHand(BJ.dealer) < 17) { BJ.dealer.push(BJ.deck.pop()); bjRenderTable(true, true); await sleep(650); }
+      }
+      bjSettleRound();
+    }
+
+    function bjSettleRound() {
+      BJ.phase = 'SETTLEMENT'; bjRenderTable(true, true);
+      const dScore = calcHand(BJ.dealer), dealerBJ = isNatural(BJ.dealer), dealerBust = dScore > 21;
+      let totalReturn = 0, totalStake = 0, lines = [];
+      BJ.hands.forEach((h, idx) => {
+        totalStake += h.bet; const pScore = calcHand(h.cards), pBJ = isNatural(h.cards) && BJ.hands.length === 1;
+        let ret = 0, label;
+        if (h.busted) { ret = 0; label = 'Перебор'; }
+        else if (pBJ && !dealerBJ) { ret = h.bet * 2.5; label = 'Блекджек 3:2'; }
+        else if (dealerBJ && !pBJ) { ret = 0; label = 'У дилера блекджек'; }
+        else if (dealerBust || pScore > dScore) { ret = h.bet * 2; label = 'Победа'; }
+        else if (pScore === dScore) { ret = h.bet; label = 'Ничья'; }
+        else { ret = 0; label = 'Поражение'; }
+        h.result = label; totalReturn += ret;
+        lines.push((BJ.hands.length > 1 ? 'Рука ' + (idx + 1) + ': ' : '') + label);
+      });
+      if (BJ.insBet > 0) { if (dealerBJ) { totalReturn += BJ.insBet * 3; lines.push('Страховка сыграла (2:1)'); } else lines.push('Страховка не сыграла'); }
+      state.balance += totalReturn; showBal(Math.round(state.balance * 100));
+      const net = totalReturn - totalStake - BJ.insBet;
+      if (totalReturn > totalStake + BJ.insBet) playSound('win');
+      logHistory('Блекджек VIP', totalStake, net >= 0 ? 'Выиграл' : 'Проиграл', net);
+      bjRenderTable(true, true);
+      bjShowSettle(lines, net);
+      $('bj-action-controls').classList.add('hidden'); $('bj-action-controls').classList.remove('flex');
+    }
+
+    function bjShowSettle(lines, net) {
+      const ov = $('bj-settle-overlay'); const title = $('bj-settle-title'), amt = $('bj-settle-amount');
+      title.innerText = lines.join(' · ');
+      amt.innerText = (net >= 0 ? '+' : '') + eur(Math.round(net * 100));
+      amt.className = 'font-cyber font-black text-xl mb-4 ' + (net > 0 ? 'text-cyber-lime' : (net < 0 ? 'text-[#E0705F]' : 'text-slate-300'));
+      ov.classList.remove('hidden'); bjHideStatus();
+    }
+
+    function bjRenderTable(showPlayer, revealDealer) {
+      const dc = $('bj-dealer-cards');
+      if (revealDealer) { dc.innerHTML = BJ.dealer.map(c => renderCardHTML(c, { deal: true })).join(''); $('bj-dealer-score').innerText = calcHand(BJ.dealer); }
+      else { dc.innerHTML = renderCardHTML(BJ.dealer[0], { deal: true }) + renderCardHTML(null, { hidden: true }); $('bj-dealer-score').innerText = '?'; }
+
+      const hw = $('bj-hands'); hw.innerHTML = '';
+      BJ.hands.forEach((h, idx) => {
+        const box = document.createElement('div');
+        box.className = 'bj-hand-box' + (BJ.phase === 'PLAYER_TURN' && idx === BJ.active && !h.done ? ' active' : '') + (h.busted ? ' busted' : '');
+        box.innerHTML = `<div class="flex justify-center -space-x-8 min-h-[105px] items-center">${h.cards.map(c => renderCardHTML(c, { deal: true })).join('')}</div>
+          <div class="text-center mt-1">
+            <span class="text-[9px] text-slate-300 font-cyber font-bold uppercase tracking-wider">${BJ.hands.length > 1 ? 'Рука ' + (idx + 1) : 'Игрок'}:</span>
+            <span class="px-2 py-0.5 bg-black/80 text-cyber-pink font-mono font-bold text-xs rounded-lg border border-cyber-cyan/40">${h.busted ? 'Перебор' : calcHand(h.cards)}</span>
+            <span class="block text-[9px] text-slate-400 font-mono mt-0.5">Ставка ${eur(Math.round(h.bet * 100))}${h.result ? ' · ' + h.result : ''}</span>
+          </div>`;
+        hw.appendChild(box);
+      });
+    }
+
+    function bjRebet() {
+      if (state.balance < BJ.lastTotalBet) { alert('Недостаточно баланса, чтобы повторить ставку!'); return bjNewBet(); }
+      BJ.pending = BJ.lastTotalBet; BJ.phase = 'BETTING';
+      $('bj-settle-overlay').classList.add('hidden'); $('bj-betspot-wrap').classList.remove('hidden');
+      $('bj-betting-controls').classList.remove('hidden'); bjRenderBetSpot();
+      $('bj-dealer-cards').innerHTML = ''; $('bj-dealer-score').innerText = '—'; $('bj-hands').innerHTML = '';
+      bjDeal();
+    }
+    function bjNewBet() {
+      BJ.phase = 'BETTING'; BJ.pending = 0; BJ.hands = []; BJ.dealer = [];
+      $('bj-settle-overlay').classList.add('hidden'); $('bj-betspot-wrap').classList.remove('hidden');
+      $('bj-betting-controls').classList.remove('hidden'); $('bj-action-controls').classList.add('hidden'); $('bj-action-controls').classList.remove('flex');
+      $('bj-dealer-cards').innerHTML = ''; $('bj-dealer-score').innerText = '—'; $('bj-hands').innerHTML = '';
+      bjRenderBetSpot(); bjSetStatus('Поставьте фишки в зону ставки и нажмите «Сдать»');
+    }
+
+    /* 5. TECH CHART & PROVABLY FAIR */
+    function initWeightsChart() {
+      const ctx = document.getElementById('weightsChart').getContext('2d');
+      window.weightsChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['DOBERMAN', 'DACHSHUND', 'BONE', 'WILD', 'ACE'],
+          datasets: [{
+            data: [4, 8, 15, 6, 30],
+            backgroundColor: ['#B5382C', '#D4A94F', '#7DBB6A', '#8A4A55', '#E9C874']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    async function calculateProvablyFairHash() {
+      const serverSeed = document.getElementById('pf-server-seed').value;
+      const clientSeed = document.getElementById('pf-client-seed').value;
+      try {
+        const enc = new TextEncoder();
+        const key = await crypto.subtle.importKey('raw', enc.encode(serverSeed), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+        const sig = await crypto.subtle.sign('HMAC', key, enc.encode(clientSeed));
+        const hex = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+        document.getElementById('pf-hash-output').innerText = hex;
+      } catch(e) {
+        document.getElementById('pf-hash-output').innerText = "Ошибка вычисления HMAC";
+      }
+    }
+
+    /* ===== Универсальный движок для остальных слотов (по образцу механик FRUIT/BASS/PHARAOH) ===== */
+    const LINES20=[[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[0,0,1,2,2],[2,2,1,0,0],[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,0],[2,1,1,1,2],[1,0,1,2,1],[1,2,1,0,1],[0,1,0,1,0],[2,1,2,1,2],[1,1,0,1,1],[1,1,2,1,1],[0,0,1,0,0],[2,2,1,2,2],[0,2,0,2,0]];
+    function makeEngine(G){
+      const LC={};
+      function pk(l,t){let r=rnd(t);for(const x of l){if(r<x[1])return x[0];r-=x[1]}return l[l.length-1][0]}
+      function lst(mode,reel){const k=mode+reel;if(LC[k])return LC[k];const l=[];let t=0;
+        for(const s of G.keys){let v=(G.weights[mode]||{})[s]||0;if(G.reelAllow&&!G.reelAllow(s,reel))v=0;if(v>0){l.push([s,v]);t+=v}}
+        return LC[k]={l,t}}
+      function sym(reel,mode){const{l,t}=lst(mode,reel);return t>0?pk(l,t):G.keys[0]}
+      function genGrid(mode){return [0,1,2,3,4].map(c=>{let sc=false;return [0,1,2].map(()=>{
+        let s;do{s=sym(c,mode)}while(G.scatterKey&&s===G.scatterKey&&sc);if(s===G.scatterKey)sc=true;return{s}})})}
+      function countScatter(g){return G.scatterKey?g.flat().filter(x=>x.s===G.scatterKey).length:0}
+      function evalLines(g,bet){const wins=[];let total=0;
+        LINES20.forEach((ln,i)=>{const f=g[0][ln[0]];if(!f||f.s===G.scatterKey||f.s===G.wildKey)return;
+          let n=1,cells=[[0,ln[0]]];
+          for(let c=1;c<5;c++){const x=g[c][ln[c]];if(x.s===f.s||x.s===G.wildKey){n++;cells.push([c,ln[c]])}else break}
+          if(n<3)return;const p=(G.pay[f.s]||{})[n];if(!p)return;
+          const amount=Math.round(p*bet/G.payDiv);if(amount>0){wins.push({line:i+1,symbol:f.s,count:n,amount,cells});total+=amount}});
+        return{wins,total}}
+      function evalScatter(g,bet){const n=countScatter(g);const p=n&&G.scatterPay?G.scatterPay[n]:0;return p?Math.round(p*bet/G.payDiv):0}
+      return{pk,lst,sym,genGrid,countScatter,evalLines,evalScatter,G}
+    }
+    /* ---- Конфигурация «Fortune Fruit Slots» ---- */
+    const FR_CFG={payDiv:1,cap:5000,keys:['CHERRY','LEMON','ORANGE','PLUM','GRAPE','WATERMELON','BELL','SEVEN','STAR'],wildKey:'SEVEN',scatterKey:'STAR',
+      pay:{CHERRY:{3:.6,4:1.2,5:3},LEMON:{3:.6,4:1.2,5:3},ORANGE:{3:.9,4:1.8,5:4.5},PLUM:{3:.9,4:1.8,5:4.5},GRAPE:{3:1.2,4:2.4,5:6},WATERMELON:{3:1.5,4:3,5:9},BELL:{3:2.4,4:6,5:18},SEVEN:{3:6,4:18,5:60}},
+      scatterPay:{3:6,4:18,5:60},
+      weights:{base:{CHERRY:10,LEMON:10,ORANGE:9,PLUM:9,GRAPE:8,WATERMELON:6,BELL:4,SEVEN:3,STAR:2},
+               fs:{CHERRY:10,LEMON:10,ORANGE:9,PLUM:9,GRAPE:8,WATERMELON:6,BELL:4,SEVEN:4,STAR:1.4}}};
+    const FR=makeEngine(FR_CFG);
+    const BB_TUNE={pMoney:0.0105,moneyVals:[[1,40],[2,25],[3,15],[5,10],[8,6],[10,3],[15,1]]};
+    /* ---- Конфигурация «Big Bass Splash» ---- */
+    const BB_MONEY=[[1,30],[2,25],[3,15],[5,12],[10,8],[15,5],[25,3],[50,1.5],[100,.5]];
+    const BB_CFG={payDiv:1,cap:4000,keys:['FISH1','FISH2','FISH3','A','K','Q','J','FISHERMAN','HOOK'],wildKey:'FISHERMAN',scatterKey:'HOOK',
+      pay:{FISH1:{3:1,4:3,5:12},FISH2:{3:.6,4:2,5:8},FISH3:{3:.4,4:1.2,5:5},A:{3:.25,4:.6,5:2},K:{3:.25,4:.6,5:2},Q:{3:.15,4:.4,5:1.25},J:{3:.15,4:.4,5:1.25},FISHERMAN:{3:2,4:6,5:20}},
+      scatterPay:{3:.5,4:2,5:10},
+      weights:{base:{FISH1:5,FISH2:7,FISH3:9,A:12,K:12,Q:14,J:14,HOOK:3,FISHERMAN:0},
+               fs:{FISH1:5,FISH2:7,FISH3:9,A:10,K:10,Q:11,J:11,HOOK:2,FISHERMAN:3}}};
+    const BB=makeEngine(BB_CFG);
+    /* ---- Конфигурация «Сокровища фараона» ---- */
+    const PH_CFG={payDiv:1,cap:5000,keys:['EXPLORER','STATUE','SCARAB','ANKH','A','K','Q','J','T','BOOK'],wildKey:null,scatterKey:'BOOK',
+      pay:{EXPLORER:{3:2,4:8,5:40},STATUE:{3:1.5,4:5,5:25},SCARAB:{3:1,4:3,5:15},ANKH:{3:.75,4:2,5:10},A:{3:.25,4:.5,5:2.5},K:{3:.25,4:.5,5:2.5},Q:{3:.15,4:.3,5:1.5},J:{3:.15,4:.3,5:1.5},T:{3:.15,4:.3,5:1.5}},
+      scatterPay:{3:1,4:8,5:40},
+      weights:{base:{EXPLORER:3,STATUE:4,SCARAB:6,ANKH:7,A:11,K:11,Q:13,J:13,T:13,BOOK:3},
+               fs:{EXPLORER:3,STATUE:4,SCARAB:6,ANKH:7,A:11,K:11,Q:13,J:13,T:13,BOOK:2}}};
+    const PH=makeEngine(PH_CFG);
+    const PH_EXPAND_BOOST=19.3;
+    const PH_NONSCATTER=['EXPLORER','STATUE','SCARAB','ANKH','A','K','Q','J','T'];
+
+    /* ===== Общий UI-слой для новых слотов (переиспользует $, sleep, CH, playSound, eur из движка «Собачьей будки») ===== */
+    function cellDivG(x,cellHTML,id,cls){return `<div class="reel-cell dh-cell ${cls||''}"${id?` id="${id}"`:''}>${cellHTML(x)}</div>`}
+    async function spinReelsG(prefix,grid,cellHTML,fillFn){return new Promise(res=>{let left=5;
+      for(let c=0;c<5;c++){const st=$(prefix+'-strip-'+c);
+        st.className='reel-strip blur';st.style.transition='none';
+        st.innerHTML=grid[c].map((x,r)=>cellDivG(x,cellHTML,`${prefix}-cell-${c}-${r}`)).join('')+Array.from({length:8},()=>cellDivG(fillFn(c),cellHTML)).join('');
+        st.style.transform=`translateY(${-9*CH}px)`;void st.offsetHeight;
+        const dur=650+c*220;st.style.transition=`transform ${dur}ms cubic-bezier(.2,.8,.3,1.08)`;st.style.transform='translateY(0)';
+        setTimeout(()=>{st.classList.remove('blur');st.style.transition='none';st.style.transform='none';playSound('click');
+          grid[c].forEach((x,r)=>{if(x.win2||x.fresh)$(`${prefix}-cell-${c}-${r}`)?.classList.add('dh-drop')});
+          if(--left===0)res()},dur+40)}})}
+    function clearWinsG(prefix){const g=$(prefix+'-grid');if(g)g.classList.remove('dimmed');document.querySelectorAll(`#${prefix}-grid .reel-cell`).forEach(e=>e.classList.remove('dh-win'))}
+    function showWinsG(prefix,wins){wins.forEach(w=>w.cells&&w.cells.forEach(([c,r])=>{const e=$(`${prefix}-cell-${c}-${r}`);if(e)e.classList.add('dh-win')}));
+      const g=$(prefix+'-grid');if(g)g.classList.toggle('dimmed',wins.length>0)}
+    async function bannerG(prefix,title,amount,ms){return new Promise(r=>{$(prefix+'-ov-title').innerText=title;$(prefix+'-win-amount').innerText=amount;
+      $(prefix+'-win-overlay').classList.remove('hidden');setTimeout(()=>{$(prefix+'-win-overlay').classList.add('hidden');r()},ms)})}
+    function setFsUIG(prefix,active,left,mult,label){const p=$(prefix+'-panel');if(p)p.classList.toggle('fs',!!active);
+      const box=$(prefix+'-fs-box');if(box)box.classList.toggle('hidden',!active);
+      if(active){$(prefix+'-fs-left').innerText=left;const m=$(prefix+'-fs-mult');if(m)m.innerText=label||('×'+mult)}}
+
+    /* ===== «Fortune Fruit Slots»: гэмбл + прогрессивные бесплатные спины ===== */
+    const SLOT_BETS=[10,20,50,100,200,500,1000];
+    const FRS={betIdx:1,fsLeft:0,fsMult:1,busy:false,stops:[],lastWin:0,gambleOpen:false};
+    const frBetC=()=>SLOT_BETS[FRS.betIdx];
+    const frCellHTML=x=>imgTag(x.s);
+    function frFill(){return{s:FR.G.keys[Math.floor(Math.random()*7)]}}
+    function adjustFrBet(d){if(FRS.busy||FRS.fsLeft>0)return;FRS.betIdx=Math.min(SLOT_BETS.length-1,Math.max(0,FRS.betIdx+d));$('fr-bet-display').innerText=eur(frBetC())}
+    async function frSpin(){
+      if(FRS.busy){FRS.stops.forEach(f=>f());return}
+      if(FRS.gambleOpen)return;
+      FRS.busy=true;clearWinsG('fr');$('fr-win-overlay').classList.add('hidden');$('fr-gamble-box').classList.add('hidden');
+      const bet=frBetC(),bal=Math.round(state.balance*100);
+      let grid,wins,total,before,inFs=FRS.fsLeft>0,justTrig=false,justRetrig=false;
+      if(inFs){
+        grid=FR.genGrid('fs');const ev=FR.evalLines(grid,bet);wins=ev.wins;total=Math.round(ev.total*FRS.fsMult);
+        before=bal;state.balance=(bal+total)/100;FRS.fsLeft--;
+        if(FR.countScatter(grid)>=3){FRS.fsLeft+=10;FRS.fsMult=Math.min(FRS.fsMult+1,6);justRetrig=true}
+      }else{
+        if(bal<bet){alert('Недостаточно баланса!');FRS.busy=false;return}
+        grid=FR.genGrid('base');const ev=FR.evalLines(grid,bet);const sc=FR.evalScatter(grid,bet);wins=ev.wins;total=ev.total+sc;
+        before=bal-bet;state.balance=(bal-bet+total)/100;
+        if(FR.countScatter(grid)>=3){FRS.fsLeft=10;FRS.fsMult=2;justTrig=true}
+      }
+      showBal(before);$('fr-spin-btn').innerText='СТОП';
+      await spinReelsG('fr',grid,frCellHTML,frFill);
+      $('fr-spin-btn').innerText='СПИН';
+      showWinsG('fr',wins);showBal(Math.round(state.balance*100));
+      $('fr-last-win').innerText=eur(total);FRS.lastWin=total;
+      if(total>0)playSound('win');
+      if(!inFs){state.dhSpinCount++;$('prof-stat-spins')&&( $('prof-stat-spins').innerText=state.dhSpinCount)}
+      logHistory('Fortune Fruit Slots',bet/100,total>0?'Выиграл':'Проиграл',total/100);
+      setFsUIG('fr',FRS.fsLeft>0,FRS.fsLeft,FRS.fsMult,'×'+FRS.fsMult);
+      await sleep(wins.length?900:300);
+      if(justTrig)await bannerG('fr','БЕСПЛАТНЫЕ СПИНЫ','10 спинов, множитель ×2',1600);
+      else if(justRetrig)await bannerG('fr','РЕТРИГГЕР!','+10 спинов, множитель ×'+FRS.fsMult,1400);
+      if(inFs&&FRS.fsLeft<=0){await bannerG('fr','ИТОГ БОНУСА','Раунд завершён',1400);setFsUIG('fr',false)}
+      FRS.busy=false;
+      if(total>0&&!FRS.fsLeft){FRS.gambleOpen=true;$('fr-gamble-box').classList.remove('hidden');$('fr-gamble-amount').innerText=eur(total)}
+      if(FRS.fsLeft>0||state.frAuto)setTimeout(()=>{if(!FRS.busy&&!FRS.gambleOpen&&(FRS.fsLeft>0||state.frAuto))frSpin()},FRS.fsLeft>0?800:1400)
+    }
+    function toggleFrAuto(){state.frAuto=!state.frAuto;$('fr-auto-btn').innerText=state.frAuto?'Авто: вкл':'Авто';if(state.frAuto&&!FRS.busy&&!FRS.gambleOpen)frSpin()}
+    function frGamble(color){
+      const win=FRS.lastWin,bal0=Math.round(state.balance*100);
+      const drawRed=rnd(2)===0;const guess=color==='red';
+      if(guess===drawRed){state.balance=(bal0+win)/100;$('fr-gamble-amount').innerText=eur(win*2);FRS.lastWin=win*2;$('fr-gamble-result').innerText='Верно! Можно рискнуть ещё раз.';playSound('win')}
+      else{state.balance=(bal0-win)/100;$('fr-gamble-result').innerText='Мимо. Забранная сумма сгорела.';FRS.lastWin=0;FRS.gambleOpen=false;$('fr-gamble-box').classList.add('hidden')}
+      showBal(Math.round(state.balance*100));
+      if(FRS.lastWin<=0){FRS.gambleOpen=false;$('fr-gamble-box').classList.add('hidden')}
+    }
+    function frGambleCollect(){FRS.gambleOpen=false;$('fr-gamble-box').classList.add('hidden');FRS.lastWin=0;
+      if(state.frAuto&&!FRS.busy)setTimeout(frSpin,400)}
+
+    /* ===== «Big Bass Splash»: денежные символы, Рыбак Wild, счётчик и ретриггеры ===== */
+    const BBS={betIdx:1,fsLeft:0,mult:1,meter:0,retrig:0,busy:false,stops:[]};
+    const bbBetC=()=>SLOT_BETS[BBS.betIdx];
+    function bbCellHTML(x){if(x.s==='MONEY')return `<div class="bb-money">€<span>${x.v}×</span></div>`;return imgTag(x.s)}
+    function bbFill(){return{s:['FISH1','FISH2','FISH3','A','K','Q','J'][Math.floor(Math.random()*7)]}}
+    function adjustBbBet(d){if(BBS.busy||BBS.fsLeft>0)return;BBS.betIdx=Math.min(SLOT_BETS.length-1,Math.max(0,BBS.betIdx+d));$('bb-bet-display').innerText=eur(bbBetC())}
+    function bbFsGrid(){const g=BB.genGrid('fs');g.forEach(col=>col.forEach(x=>{
+      if(x.s!=='FISHERMAN'&&x.s!=='HOOK'&&rnd(1000)/1000<BB_TUNE.pMoney){x.s='MONEY';x.v=pick(BB_TUNE.moneyVals,BB_TUNE.moneyVals.reduce((a,b)=>a+b[1],0))}}));return g}
+    async function bbSpin(){
+      if(BBS.busy){BBS.stops.forEach(f=>f());return}
+      BBS.busy=true;clearWinsG('bb');$('bb-win-overlay').classList.add('hidden');
+      const bet=bbBetC(),bal=Math.round(state.balance*100);
+      let grid,wins,total,before,inFs=BBS.fsLeft>0,justTrig=false,justRetrig=false,collect=0;
+      if(inFs){
+        grid=bbFsGrid();const ev=BB.evalLines(grid,bet);wins=ev.wins;
+        const moneySum=grid.flat().filter(x=>x.s==='MONEY').reduce((a,b)=>a+b.v,0);
+        const wc=grid.flat().filter(x=>x.s==='FISHERMAN').length;
+        collect=wc>0?Math.round(moneySum*BBS.mult*wc*bet):0;
+        total=ev.total+collect;before=bal;state.balance=(bal+total)/100;BBS.fsLeft--;BBS.meter+=wc;
+        while(BBS.meter>=4&&BBS.retrig<3){BBS.meter-=4;BBS.retrig++;BBS.fsLeft+=10;BBS.mult=[1,2,3,10][BBS.retrig];justRetrig=true}
+      }else{
+        if(bal<bet){alert('Недостаточно баланса!');BBS.busy=false;return}
+        grid=BB.genGrid('base');const ev=BB.evalLines(grid,bet);const sc=BB.evalScatter(grid,bet);wins=ev.wins;total=ev.total+sc;
+        before=bal-bet;state.balance=(bal-bet+total)/100;
+        const scN=BB.countScatter(grid);
+        if(scN>=3){justTrig=true;BBS.fsLeft=scN===3?10:(scN===4?15:20);BBS.mult=1;BBS.meter=0;BBS.retrig=0}
+      }
+      showBal(before);$('bb-spin-btn').innerText='СТОП';
+      await spinReelsG('bb',grid,bbCellHTML,bbFill);
+      $('bb-spin-btn').innerText='СПИН';
+      showWinsG('bb',wins);showBal(Math.round(state.balance*100));
+      $('bb-last-win').innerText=eur(total);
+      if(total>0)playSound('win');
+      if(!inFs){state.dhSpinCount++}
+      logHistory('Big Bass Splash',bet/100,total>0?'Выиграл':'Проиграл',total/100);
+      setFsUIG('bb',BBS.fsLeft>0,BBS.fsLeft,BBS.mult,'×'+BBS.mult+' · счётчик '+BBS.meter+'/4');
+      await sleep(wins.length||collect?900:300);
+      if(justTrig)await bannerG('bb','БЕСПЛАТНЫЕ СПИНЫ',BBS.fsLeft+' спинов',1600);
+      else if(justRetrig)await bannerG('bb','РЕТРИГГЕР!','+10 спинов, множитель ×'+BBS.mult,1400);
+      if(inFs&&BBS.fsLeft<=0){await bannerG('bb','ИТОГ БОНУСА','Раунд завершён',1400);setFsUIG('bb',false)}
+      BBS.busy=false;
+      if(BBS.fsLeft>0||state.bbAuto)setTimeout(()=>{if(!BBS.busy&&(BBS.fsLeft>0||state.bbAuto))bbSpin()},BBS.fsLeft>0?800:1400)
+    }
+    function toggleBbAuto(){state.bbAuto=!state.bbAuto;$('bb-auto-btn').innerText=state.bbAuto?'Авто: вкл':'Авто';if(state.bbAuto&&!BBS.busy)bbSpin()}
+
+    /* ===== «Сокровища фараона»: случайный расширяющийся символ на бесплатных спинах ===== */
+    const PHS={betIdx:1,fsLeft:0,busy:false,stops:[],expSym:null};
+    const phBetC=()=>SLOT_BETS[PHS.betIdx];
+    function phCellHTML(x){return imgTag(x.s)}
+    function phFill(){return{s:PH_NONSCATTER[Math.floor(Math.random()*PH_NONSCATTER.length)]}}
+    function adjustPhBet(d){if(PHS.busy||PHS.fsLeft>0)return;PHS.betIdx=Math.min(SLOT_BETS.length-1,Math.max(0,PHS.betIdx+d));$('ph-bet-display').innerText=eur(phBetC())}
+    function phFsGrid(){const w={...PH_CFG.weights.fs,[PHS.expSym]:PH_EXPAND_BOOST};
+      const grid=[0,1,2,3,4].map(()=>{let sc=false;return[0,1,2].map(()=>{
+        const list=[];let t=0;for(const k of PH_CFG.keys){let v=w[k]||0;if(v>0){list.push([k,v]);t+=v}}
+        let s2;do{s2=pick(list,t)}while(s2==='BOOK'&&sc);if(s2==='BOOK')sc=true;return{s:s2}})});
+      for(let c=0;c<5;c++){if(grid[c].some(x=>x.s===PHS.expSym))for(let r=0;r<3;r++)grid[c][r]={s:PHS.expSym,exp:1}}
+      return grid}
+    async function phSpin(){
+      if(PHS.busy){PHS.stops.forEach(f=>f());return}
+      PHS.busy=true;clearWinsG('ph');$('ph-win-overlay').classList.add('hidden');
+      const bet=phBetC(),bal=Math.round(state.balance*100);
+      let grid,wins,total,before,inFs=PHS.fsLeft>0,justTrig=false,justRetrig=false;
+      if(inFs){
+        grid=phFsGrid();const ev=PH.evalLines(grid,bet);wins=ev.wins;total=ev.total;
+        before=bal;state.balance=(bal+total)/100;PHS.fsLeft--;
+        if(PH.countScatter(grid)>=3){PHS.fsLeft+=10;justRetrig=true}
+      }else{
+        if(bal<bet){alert('Недостаточно баланса!');PHS.busy=false;return}
+        grid=PH.genGrid('base');const ev=PH.evalLines(grid,bet);const sc=PH.evalScatter(grid,bet);wins=ev.wins;total=ev.total+sc;
+        before=bal-bet;state.balance=(bal-bet+total)/100;
+        const scN=PH.countScatter(grid);
+        if(scN>=3){justTrig=true;PHS.fsLeft=scN===3?10:(scN===4?15:20);PHS.expSym=PH_NONSCATTER[rnd(PH_NONSCATTER.length)]}
+      }
+      showBal(before);$('ph-spin-btn').innerText='СТОП';
+      await spinReelsG('ph',grid,phCellHTML,phFill);
+      $('ph-spin-btn').innerText='СПИН';
+      showWinsG('ph',wins);showBal(Math.round(state.balance*100));
+      $('ph-last-win').innerText=eur(total);
+      if(total>0)playSound('win');
+      if(!inFs){state.dhSpinCount++}
+      logHistory('Сокровища фараона',bet/100,total>0?'Выиграл':'Проиграл',total/100);
+      setFsUIG('ph',PHS.fsLeft>0,PHS.fsLeft,1,PHS.expSym?('Символ: '+(ALT[PHS.expSym]||PHS.expSym)):'');
+      await sleep(wins.length?900:300);
+      if(justTrig)await bannerG('ph','БЕСПЛАТНЫЕ СПИНЫ',PHS.fsLeft+' спинов',1600);
+      else if(justRetrig)await bannerG('ph','РЕТРИГГЕР!','+10 спинов',1400);
+      if(inFs&&PHS.fsLeft<=0){await bannerG('ph','ИТОГ БОНУСА','Раунд завершён',1400);setFsUIG('ph',false)}
+      PHS.busy=false;
+      if(PHS.fsLeft>0||state.phAuto)setTimeout(()=>{if(!PHS.busy&&(PHS.fsLeft>0||state.phAuto))phSpin()},PHS.fsLeft>0?800:1400)
+    }
+    function togglePhAuto(){state.phAuto=!state.phAuto;$('ph-auto-btn').innerText=state.phAuto?'Авто: вкл':'Авто';if(state.phAuto&&!PHS.busy)phSpin()}
+
+
+    window.addEventListener('DOMContentLoaded', () => {
+      applyArt();initDhStrips();
+    });
+  </script>
+</body>
+</html>
